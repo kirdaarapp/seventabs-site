@@ -227,6 +227,20 @@ h1 .grad{
 .download-grid .dl-card:nth-child(2){transition-delay:.14s}
 .dl-note{text-align:center;color:var(--ink-faint);font-size:13px;max-width:560px;margin:32px auto 0}
 
+/* Every hover-tilt card on the site (feature/plan/download/step cards)
+   keeps its lift + color feedback under reduced motion, but drops the
+   rotateX — a perspective rotation is real motion, not just a static
+   state change, so it's the part that actually needs to go here. */
+@media (prefers-reduced-motion: reduce){
+  .card:hover{transform:translateY(-6px)}
+  .step:hover{transform:translateY(-6px)}
+  .plan:hover{transform:translateY(-6px)}
+  .pricing-grid .plan.featured.in-view:hover{transform:translateY(-12px)}
+  .plan.featured:hover{transform:translateY(-12px)}
+  .plan-teaser:hover{transform:translateY(-6px)}
+  .dl-card:hover{transform:translateY(-6px)}
+}
+
 /* CTA banner */
 .cta-banner{
   background:linear-gradient(135deg,#262759,#15162e);

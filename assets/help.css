@@ -60,3 +60,4 @@ mark.faq-hit{background:rgba(108,99,255,.35);color:var(--ink);border-radius:3px;
 
 .cat-nav a{transition:transform .15s ease, color .15s ease, border-color .15s ease}
 .cat-nav a:hover{transform:translateY(-2px) rotateX(6deg)}
+@media (prefers-reduced-motion: reduce){.cat-nav a:hover{transform:translateY(-2px)}}

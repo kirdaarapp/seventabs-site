@@ -81,3 +81,8 @@
   text-decoration:none;transition:border-color .15s ease, color .15s ease, transform .15s ease;
 }
 .related-chip:hover{border-color:rgba(108,99,255,.5);color:var(--ink);transform:translateY(-2px) rotateX(6deg)}
+
+@media (prefers-reduced-motion: reduce){
+  .compare-col:hover{transform:translateY(-6px)}
+  .related-chip:hover{transform:translateY(-2px)}
+}
