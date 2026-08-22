@@ -124,7 +124,11 @@ h1 .grad{
 /* How it works */
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;perspective:1400px}
 @media (max-width:800px){.steps{grid-template-columns:1fr}}
-.step{position:relative;padding:30px 24px 24px;background:var(--panel);border:1px solid var(--panel-border);border-radius:var(--radius)}
+.step{
+  position:relative;padding:30px 24px 24px;background:var(--panel);border:1px solid var(--panel-border);border-radius:var(--radius);
+  transition:transform .22s cubic-bezier(.2,.7,.3,1), border-color .18s ease;
+}
+.step:hover{transform:translateY(-6px) rotateX(4deg);border-color:rgba(108,99,255,.4)}
 .step .num{
   width:36px;height:36px;border-radius:50%;background:var(--accent-grad);color:#fff;
   display:flex;align-items:center;justify-content:center;font-weight:800;margin-bottom:16px;

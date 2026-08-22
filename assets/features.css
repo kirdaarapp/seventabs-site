@@ -19,21 +19,26 @@
 
 /* Stylized in-app mockup panel, reusing the .preview "browser chrome" look
    from the homepage hero but with feature-specific row content instead of
-   the fixed KPI grid. */
+   the fixed KPI grid. Wrapped in the same .preview-3d/.preview-tilt layers
+   as the homepage hero (defined in home.css) so it gets the identical
+   perspective-tilt + mouse-follow treatment (see initHeroTilt in site.js) —
+   .mock-window itself keeps its own data-animate fade/lift, same split
+   reasoning as the homepage preview: one element, one transform job. */
 .mock-window{
-  max-width:640px;margin:44px auto 0;
+  max-width:640px;margin:0 auto;
   border-radius:18px;border:1px solid var(--panel-border);
   background:linear-gradient(180deg,#1e1f3f,#171833);
   box-shadow:var(--shadow);padding:10px;
 }
+.mock-3d{margin:44px auto 0}
 .mock-bar{display:flex;gap:6px;padding:10px 12px}
 .mock-bar span{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.15)}
-.mock-body{border-radius:12px;background:var(--bg-soft);padding:22px}
+.mock-body{border-radius:12px;background:var(--bg-soft);padding:22px;transform-style:preserve-3d}
 .mock-list{display:flex;flex-direction:column;gap:10px}
 .mock-row{
   display:flex;align-items:center;justify-content:space-between;gap:14px;
   background:var(--panel);border:1px solid var(--panel-border);border-radius:10px;
-  padding:13px 15px;
+  padding:13px 15px;transform:translateZ(16px);
 }
 .mock-row .mock-main{display:flex;flex-direction:column;gap:3px;text-align:left;min-width:0}
 .mock-row .mock-title{font-size:13.5px;font-weight:700;color:var(--ink)}
@@ -47,9 +52,13 @@
 .mock-badge.info{background:rgba(108,99,255,.16);color:var(--accent)}
 
 /* Comparison columns */
-.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:820px;margin:0 auto}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:820px;margin:0 auto;perspective:1400px}
 @media (max-width:700px){.compare-grid{grid-template-columns:1fr}}
-.compare-col{background:var(--panel);border:1px solid var(--panel-border);border-radius:var(--radius);padding:28px}
+.compare-col{
+  background:var(--panel);border:1px solid var(--panel-border);border-radius:var(--radius);padding:28px;
+  transition:transform .22s cubic-bezier(.2,.7,.3,1), border-color .18s ease;
+}
+.compare-col:hover{transform:translateY(-6px) rotateX(4deg);border-color:rgba(108,99,255,.4)}
 .compare-col h4{margin:0 0 18px;font-size:15px;font-weight:700}
 .compare-col.bad h4{color:var(--ink-faint)}
 .compare-col.good h4{color:var(--accent-2)}
@@ -61,11 +70,11 @@
 .compare-col.good li svg{stroke:var(--accent-2)}
 
 /* Related-feature strip at the bottom of each detail page */
-.related-strip{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.related-strip{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;perspective:900px}
 .related-chip{
   display:inline-flex;align-items:center;gap:8px;
   background:var(--panel);border:1px solid var(--panel-border);border-radius:999px;
   padding:9px 18px;font-size:13.5px;font-weight:600;color:var(--ink-dim);
   text-decoration:none;transition:border-color .15s ease, color .15s ease, transform .15s ease;
 }
-.related-chip:hover{border-color:rgba(108,99,255,.5);color:var(--ink);transform:translateY(-2px)}
+.related-chip:hover{border-color:rgba(108,99,255,.5);color:var(--ink);transform:translateY(-2px) rotateX(6deg)}
