@@ -826,34 +826,36 @@ if (overlay) {
   });
 })();
 
-// ---- Hero mockup 3D tilt (index.html only — #preview3d/#previewTilt
-// aren't on any other page, so this is a no-op everywhere else) ----
-// Reserved to this one focal element deliberately, not applied to every
+// ---- Mouse-follow 3D tilt for a page's one focal element ----
+// Each page gets at most one of these deliberately, not applied to every
 // card on the page — a mouse-follow tilt on many elements at once reads
 // as noisy rather than as a deliberate depth cue. Off under
-// prefers-reduced-motion (the resting CSS tilt from home.css's
-// previewTiltIn still applies; only the pointer-follow motion is
-// skipped), and paused the instant the pointer leaves so it always
-// settles back to the resting tilt rather than getting stuck mid-tween.
-(function initHeroTilt() {
-  const wrap = document.getElementById('preview3d');
-  const tilt = document.getElementById('previewTilt');
+// prefers-reduced-motion (the resting CSS tilt still applies from
+// home.css/checkout.css; only the pointer-follow motion is skipped),
+// and paused the instant the pointer leaves so it always settles back
+// to the resting tilt rather than getting stuck mid-tween.
+function initTilt(wrapId, tiltId, restY, rangeX, rangeY) {
+  const wrap = document.getElementById(wrapId);
+  const tilt = document.getElementById(tiltId);
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (!wrap || !tilt || reduceMotion) return;
-  if (window.matchMedia('(max-width: 720px)').matches) return; // flattened on phones, see home.css
-
-  const RANGE_X = 12; // deg — how far rotateY swings side to side
-  const RANGE_Y = 7;  // deg — how far rotateX swings up/down
+  if (window.matchMedia('(max-width: 720px)').matches) return; // flattened on phones
 
   wrap.addEventListener('pointermove', (e) => {
     const r = wrap.getBoundingClientRect();
     const px = (e.clientX - r.left) / r.width;  // 0..1 across the element
     const py = (e.clientY - r.top) / r.height;
-    tilt.style.setProperty('--tilt-y', `${(px - 0.5) * -2 * RANGE_X}deg`);
-    tilt.style.setProperty('--tilt-x', `${(0.5 - py) * -2 * RANGE_Y + 9}deg`);
+    tilt.style.setProperty('--tilt-y', `${(px - 0.5) * -2 * rangeX}deg`);
+    tilt.style.setProperty('--tilt-x', `${(0.5 - py) * -2 * rangeY + restY}deg`);
   });
   wrap.addEventListener('pointerleave', () => {
     tilt.style.removeProperty('--tilt-y');
     tilt.style.removeProperty('--tilt-x');
   });
-})();
+}
+// index.html hero mockup — #preview3d/#previewTilt aren't on any other
+// page, so this call is a no-op everywhere else.
+initTilt('preview3d', 'previewTilt', 9, 12, 7);
+// checkout.html payment card — #payCard3d/#payCard aren't on any other
+// page. Smaller swing than the hero since the card itself is smaller.
+initTilt('payCard3d', 'payCard', 5, 9, 5);

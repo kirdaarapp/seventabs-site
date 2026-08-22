@@ -21,9 +21,12 @@
    from the homepage hero but with feature-specific row content instead of
    the fixed KPI grid. Wrapped in the same .preview-3d/.preview-tilt layers
    as the homepage hero (defined in home.css) so it gets the identical
-   perspective-tilt + mouse-follow treatment (see initHeroTilt in site.js) —
-   .mock-window itself keeps its own data-animate fade/lift, same split
-   reasoning as the homepage preview: one element, one transform job. */
+   static perspective tilt — deliberately without an id, so site.js's
+   initTilt() (reserved to one focal element per page) does NOT add
+   mouse-follow here; a feature page's focal tilt element is its own
+   mockup, not a homepage-wide behavior. .mock-window itself keeps its
+   own data-animate fade/lift, same split reasoning as the homepage
+   preview: one element, one transform job. */
 .mock-window{
   max-width:640px;margin:0 auto;
   border-radius:18px;border:1px solid var(--panel-border);

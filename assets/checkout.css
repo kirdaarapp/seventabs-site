@@ -29,16 +29,26 @@
 .checkout-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:44px;align-items:start}
 @media (max-width:760px){.checkout-grid{grid-template-columns:1fr}}
 
-/* Animated glassy card visual */
+/* Animated glassy card visual — tilts in real 3D like a card in a wallet
+   app, mouse-follow via initTilt() in site.js (checkout's one focal
+   tilt element, same "reserved to one element" reasoning as the
+   homepage hero). .pay-card-3d owns the perspective+layout; .pay-card
+   owns the rotation (JS sets --tilt-x/--tilt-y) and keeps its existing
+   processing/success box-shadow states, since box-shadow and transform
+   are independent properties and don't fight each other. */
+.pay-card-3d{perspective:1600px}
 .pay-card{
   position:relative;border-radius:20px;padding:2px;margin-bottom:24px;
   background:linear-gradient(160deg,#262759,#15162e);
   box-shadow:0 20px 44px -18px rgba(46,42,120,.7);
-  transition:box-shadow .4s ease;
+  transform:rotateX(var(--tilt-x,5deg)) rotateY(var(--tilt-y,-8deg));
+  transform-style:preserve-3d;
+  transition:box-shadow .4s ease, transform .4s cubic-bezier(.2,.7,.3,1);
 }
 .pay-card-face{
   border-radius:18px;padding:26px 24px;min-height:170px;position:relative;overflow:hidden;
   background:linear-gradient(150deg,#221955 0%,#1e1f3f 60%,#171833 100%);
+  transform:translateZ(20px);
 }
 .pay-card-face::before{
   content:"";position:absolute;inset:0;
@@ -83,6 +93,12 @@
 
 @media (prefers-reduced-motion: reduce){
   .pay-card.processing{animation:none}
+  .pay-card{transition:box-shadow .4s ease;transform:rotateX(4deg) rotateY(-6deg)}
+}
+@media (max-width:720px){
+  .pay-card-3d{perspective:none}
+  .pay-card{transform:none !important;transition:box-shadow .4s ease}
+  .pay-card-face{transform:none}
 }
 
 .checkout-badges{display:flex;flex-direction:column;gap:10px;font-size:13px;color:var(--ink-dim)}
