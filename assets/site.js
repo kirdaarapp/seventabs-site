@@ -256,21 +256,29 @@ if (overlay) {
   let pendingEmail = '';
   let otpCooldownTimer = null;
 
+  // Builds are published to kirdaarapp/seventabs-site's releases, not
+  // this repo's own — Account-software is private, and GitHub Release
+  // assets on a private repo 404 for an anonymous download regardless
+  // of anything here (confirmed directly: even the release page itself
+  // 404s with no auth). seventabs-site is already public (it's the
+  // GitHub Pages mirror serving 7tabs.org itself), so its releases are
+  // real public downloads. See build-windows.yml's own comment on its
+  // release step for the full story.
   const PLATFORM_BUILDS = {
     windows: {
       label: 'Windows',
       file: 'SevenTabs-Windows.zip',
-      url: 'https://github.com/kirdaarapp/Account-software/releases/latest/download/SevenTabs-Windows.zip',
+      url: 'https://github.com/kirdaarapp/seventabs-site/releases/latest/download/SevenTabs-Windows.zip',
     },
     android: {
       label: 'Android',
       file: 'SevenTabs-Android.apk',
-      url: 'https://github.com/kirdaarapp/Account-software/releases/latest/download/SevenTabs-Android.apk',
+      url: 'https://github.com/kirdaarapp/seventabs-site/releases/latest/download/SevenTabs-Android.apk',
     },
     mac: {
       label: 'Mac',
       file: 'SevenTabs-macOS.zip',
-      url: 'https://github.com/kirdaarapp/Account-software/releases/latest/download/SevenTabs-macOS.zip',
+      url: 'https://github.com/kirdaarapp/seventabs-site/releases/latest/download/SevenTabs-macOS.zip',
     },
   };
 
