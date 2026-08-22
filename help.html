@@ -19,8 +19,8 @@
 <meta name="twitter:description" content="Answers to the most important questions about SevenTabs — getting started, security, billing, team roles, data migration and troubleshooting.">
 <meta name="twitter:image" content="https://7tabs.org/assets/logo.png">
 
-<link rel="stylesheet" href="assets/site.css?v=70d303e2cb06">
-<link rel="stylesheet" href="assets/help.css?v=70d303e2cb06">
+<link rel="stylesheet" href="assets/site.css?v=ab18317f7e6c">
+<link rel="stylesheet" href="assets/help.css?v=ab18317f7e6c">
 <style>summary{list-style:none}summary::-webkit-details-marker{display:none}</style>
 
 <script type="application/ld+json">
@@ -41,7 +41,7 @@
       "name": "Do I need to install anything to try it?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "No. Sign in on 7tabs.org and you can run SevenTabs straight in your browser immediately. Native Windows and Android installers are also available if you'd rather have a desktop/home-screen app — see the Security & downloads section for what to expect the first time you run one."
+        "text": "No. Sign in on 7tabs.org and you can run SevenTabs straight in your browser immediately. Native Windows, Mac and Android installers are also available if you'd rather have a desktop/home-screen app — see the Security & downloads section for what to expect the first time you run one."
       }
     },
     {
@@ -670,6 +670,14 @@
     },
     {
       "@type": "Question",
+      "name": "Why does the Mac download show it's from an \"unidentified developer\"?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "That's macOS Gatekeeper — the same code-signing story as Windows SmartScreen, not a malware warning. Right-click (or Control-click) SevenTabs.app and choose Open, then confirm Open in the dialog that appears; you only need to do this once. We're on the roadmap to get an Apple Developer certificate to remove this entirely."
+      }
+    },
+    {
+      "@type": "Question",
       "name": "Chrome blocked my download as \"insecure\" — what happened?",
       "acceptedAnswer": {
         "@type": "Answer",
@@ -786,6 +794,14 @@
       "acceptedAnswer": {
         "@type": "Answer",
         "text": "Make sure you unzipped the download fully before running SevenTabs.exe — running it directly from inside the zip can fail silently. If SmartScreen appeared, see Security & downloads above."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "The Mac app won't open at all",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Make sure you unzipped the download fully before running SevenTabs.app — running it directly from inside the zip can fail silently. If Gatekeeper blocked it, see Security & downloads above for the right-click-Open step."
       }
     }
   ]
@@ -945,7 +961,7 @@
 
       <details class="faq-item" data-animate>
         <summary class="faq-q">Do I need to install anything to try it?<span class="plus">+</span></summary>
-        <div class="faq-a">No. Sign in on <a href="index.html">7tabs.org</a> and you can run SevenTabs straight in your browser immediately. Native Windows and Android installers are also available if you'd rather have a desktop/home-screen app — see the <a href="#security">Security &amp; downloads</a> section for what to expect the first time you run one.</div>
+        <div class="faq-a">No. Sign in on <a href="index.html">7tabs.org</a> and you can run SevenTabs straight in your browser immediately. Native Windows, Mac and Android installers are also available if you'd rather have a desktop/home-screen app — see the <a href="#security">Security &amp; downloads</a> section for what to expect the first time you run one.</div>
       </details>
 
       <details class="faq-item" data-animate>
@@ -1344,6 +1360,11 @@
       </details>
 
       <details class="faq-item" data-animate>
+        <summary class="faq-q">Why does the Mac download show it's from an "unidentified developer"?<span class="plus">+</span></summary>
+        <div class="faq-a">That's macOS Gatekeeper — the same code-signing story as Windows SmartScreen, not a malware warning. Right-click (or Control-click) SevenTabs.app and choose Open, then confirm Open in the dialog that appears; you only need to do this once. We're on the roadmap to get an Apple Developer certificate to remove this entirely.</div>
+      </details>
+
+      <details class="faq-item" data-animate>
         <summary class="faq-q">Chrome blocked my download as "insecure" — what happened?<span class="plus">+</span></summary>
         <div class="faq-a">That specific warning means the page itself wasn't loaded over HTTPS at that moment (a brand-new domain's SSL certificate can take a little while to finish provisioning). Reload 7tabs.org and confirm you see a padlock in the address bar before downloading — once that's there, the "insecure download" warning goes away, since it's a mixed-content check, not a comment on the file.</div>
       </details>
@@ -1446,6 +1467,11 @@
         <div class="faq-a">Make sure you unzipped the download fully before running SevenTabs.exe — running it directly from inside the zip can fail silently. If SmartScreen appeared, see <a href="#security">Security &amp; downloads</a> above.</div>
       </details>
 
+      <details class="faq-item" data-animate>
+        <summary class="faq-q">The Mac app won't open at all<span class="plus">+</span></summary>
+        <div class="faq-a">Make sure you unzipped the download fully before running SevenTabs.app — running it directly from inside the zip can fail silently. If Gatekeeper blocked it, see <a href="#security">Security &amp; downloads</a> above for the right-click-Open step.</div>
+      </details>
+
     </div>
   </section>
 
@@ -1471,7 +1497,7 @@
   </div>
 </footer>
 
-<script type="module" src="assets/site.js?v=70d303e2cb06"></script>
+<script type="module" src="assets/site.js?v=ab18317f7e6c"></script>
 <script>
   // FAQ search — filters every question across all categories at once,
   // instead of making someone scroll through 100+ questions by hand.

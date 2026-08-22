@@ -255,11 +255,6 @@ if (overlay) {
   let hasSession = false;
   let pendingEmail = '';
   let otpCooldownTimer = null;
-  // Set when someone clicks a specific platform's download card (see
-  // the [data-platform] wiring below) — takes priority over auto-detect
-  // so picking "Download for Windows" from a Mac still gets you the
-  // Windows build instead of "no native build for this device."
-  let requestedPlatform = null;
 
   const PLATFORM_BUILDS = {
     windows: {
@@ -272,20 +267,41 @@ if (overlay) {
       file: 'SevenTabs-Android.apk',
       url: 'https://github.com/kirdaarapp/Account-software/releases/latest/download/SevenTabs-Android.apk',
     },
+    mac: {
+      label: 'Mac',
+      file: 'SevenTabs-macOS.zip',
+      url: 'https://github.com/kirdaarapp/Account-software/releases/latest/download/SevenTabs-macOS.zip',
+    },
   };
 
-  // Windows/Android get a real native build; every other platform (no
-  // build published for it yet — see index.html's Download section)
-  // falls back to the browser, which is the only thing that'll
-  // actually run there today.
+  // Windows/Android/Mac get a real native build; iOS (no build
+  // published — see the Download page's "Coming soon" card) falls
+  // back to the browser, which is the only thing that'll actually run
+  // there today.
   function detectDownload() {
-    if (requestedPlatform && PLATFORM_BUILDS[requestedPlatform]) {
-      return PLATFORM_BUILDS[requestedPlatform];
-    }
     const ua = navigator.userAgent;
     if (/Windows/i.test(ua)) return PLATFORM_BUILDS.windows;
     if (/Android/i.test(ua)) return PLATFORM_BUILDS.android;
+    if (/Macintosh/i.test(ua)) return PLATFORM_BUILDS.mac;
     return null;
+  }
+
+  // A real <a download> click for a given platform's build — same safe
+  // technique showSuccess() below uses (never location.href, so it can
+  // never navigate the page away even without a Content-Disposition
+  // header). Used by the platform download cards directly, with no
+  // sign-in/session involved at all: getting the installer is free and
+  // needs no account, only the cloud/team product does.
+  function triggerDirectDownload(platform) {
+    const build = PLATFORM_BUILDS[platform];
+    if (!build) return;
+    const a = document.createElement('a');
+    a.href = build.url;
+    a.setAttribute('download', build.file);
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   }
 
   // Shown once a session exists AND this device has proven it via the
@@ -371,15 +387,13 @@ if (overlay) {
     if (btn) btn.addEventListener('click', openModal);
   });
 
-  // Platform-specific download cards (index.html's Download section) —
-  // same sign-in-first gate as every other entry point, per the standing
-  // rule that "open/download SevenTabs" always means the same thing
-  // wherever it's clicked from.
+  // Platform-specific download cards (index.html + download.html) —
+  // deliberately NOT gated behind sign-in: getting the installer is
+  // free and needs no email, unlike every other "Get SevenTabs" entry
+  // point above, which is the cloud/team product and keeps its
+  // existing sign-in-first flow untouched.
   document.querySelectorAll('[data-platform]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      requestedPlatform = btn.dataset.platform;
-      openModal();
-    });
+    btn.addEventListener('click', () => triggerDirectDownload(btn.dataset.platform));
   });
 
   closeBtn.addEventListener('click', closeModal);
