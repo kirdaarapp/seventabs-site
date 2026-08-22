@@ -9,8 +9,8 @@
 <link rel="canonical" href="https://7tabs.org/checkout.html">
 <link rel="icon" href="assets/favicon.png">
 
-<link rel="stylesheet" href="assets/site.css?v=9aadaa297c2b">
-<link rel="stylesheet" href="assets/checkout.css?v=9aadaa297c2b">
+<link rel="stylesheet" href="assets/site.css?v=891227a2fc99">
+<link rel="stylesheet" href="assets/checkout.css?v=891227a2fc99">
 </head>
 <body>
 <canvas id="fx" aria-hidden="true"></canvas>
@@ -169,9 +169,14 @@
             <h2>Payment details</h2>
             <p class="checkout-sub">Upgrading <strong id="companyNameText"></strong> to Pro.</p>
 
+            <div class="billing-toggle" id="checkoutBillingToggle" role="group" aria-label="Billing period">
+              <button type="button" class="billing-toggle-opt active" data-period="monthly">Monthly</button>
+              <button type="button" class="billing-toggle-opt" data-period="yearly">Yearly <span class="billing-toggle-save">save ~13%</span></button>
+            </div>
+
             <div class="checkout-amount-row">
               <span>Pro plan</span>
-              <span>$19.00<span class="checkout-amount-period">/mo</span></span>
+              <span><span id="checkoutAmountValue">$19.00</span><span class="checkout-amount-period" id="checkoutAmountPeriod">/mo</span></span>
             </div>
 
             <form id="paymentForm">
@@ -219,8 +224,8 @@
   </div>
 </footer>
 
-<script type="module" src="assets/site.js?v=9aadaa297c2b"></script>
-<script type="module" src="assets/checkout.js?v=9aadaa297c2b"></script>
+<script type="module" src="assets/site.js?v=891227a2fc99"></script>
+<script type="module" src="assets/checkout.js?v=891227a2fc99"></script>
 
 </body>
 </html>

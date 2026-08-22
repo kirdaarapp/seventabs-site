@@ -13,6 +13,27 @@ const supabase = createClient(
   'sb_publishable_25vQKsEQqDUEjEkuglU1Rg_GzEW9S3a'
 );
 
+// Monthly/yearly plan choice — defaults from pricing.html's own toggle
+// via ?plan=yearly (see assets/pricing.css's "Upgrade now" link), but
+// stays changeable here too via the toggle below.
+let selectedPlan = new URLSearchParams(location.search).get('plan') === 'yearly'
+  ? 'yearly'
+  : 'monthly';
+const PLAN_AMOUNTS = { monthly: '$19.00', yearly: '$199.00' };
+const PLAN_PERIODS = { monthly: '/mo', yearly: '/yr' };
+
+function updateAmountUI() {
+  const amountValue = document.getElementById('checkoutAmountValue');
+  const period = document.getElementById('checkoutAmountPeriod');
+  const submitLabel = document.getElementById('paySubmitLabel');
+  if (amountValue) amountValue.textContent = PLAN_AMOUNTS[selectedPlan];
+  if (period) period.textContent = PLAN_PERIODS[selectedPlan];
+  if (submitLabel) submitLabel.textContent = `Pay ${PLAN_AMOUNTS[selectedPlan]} now`;
+  document.querySelectorAll('#checkoutBillingToggle .billing-toggle-opt').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.period === selectedPlan);
+  });
+}
+
 const gateSignIn = document.getElementById('gateSignIn');
 const gateNoCompany = document.getElementById('gateNoCompany');
 const gateAlreadyPro = document.getElementById('gateAlreadyPro');
@@ -96,17 +117,43 @@ async function runGateCheck() {
   stepPayment.classList.add('active');
   document.getElementById('companyNameText').textContent = company.name;
   showGate(checkoutGrid);
-  startStripe(session.access_token);
+  storedAccessToken = session.access_token;
+  startStripe(storedAccessToken);
 }
 
+// Kept so the billing-period toggle can restart checkout for a newly
+// chosen plan after the Stripe form has already mounted once —
+// creating a fresh Subscription/PaymentIntent for the new Price is the
+// only way to change the amount (an already-created PaymentIntent's
+// amount can't just be edited client-side).
+let storedAccessToken = null;
 let stripeStarted = false;
+document.querySelectorAll('#checkoutBillingToggle .billing-toggle-opt').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    if (btn.dataset.period === selectedPlan) return;
+    selectedPlan = btn.dataset.period;
+    updateAmountUI();
+    if (stripeStarted && storedAccessToken) {
+      // Strip the old form's submit listener by replacing it with an
+      // unbound clone, unmount the stale Payment Element, and start a
+      // fresh Subscription for the newly selected plan.
+      const oldForm = document.getElementById('paymentForm');
+      oldForm.replaceWith(oldForm.cloneNode(true));
+      document.getElementById('paymentElement').innerHTML = '';
+      stripeStarted = false;
+      startStripe(storedAccessToken);
+    }
+  });
+});
+
 async function startStripe(accessToken) {
   if (stripeStarted) return;
   stripeStarted = true;
   try {
     const res = await fetch(`${SUPABASE_URL}/functions/v1/create-subscription-intent`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: selectedPlan }),
     });
     const data = await res.json();
     if (!res.ok || data.error) throw new Error(data.error || 'Could not start checkout.');
@@ -159,7 +206,7 @@ async function startStripe(accessToken) {
         paymentError.textContent = error.message || 'Payment failed. Please try again.';
         paymentError.classList.add('show');
         submitBtn.disabled = false;
-        submitLabel.textContent = 'Pay $19.00 now';
+        submitLabel.textContent = `Pay ${PLAN_AMOUNTS[selectedPlan]} now`;
         return;
       }
 
@@ -186,4 +233,5 @@ function loadScript(src) {
   });
 }
 
+updateAmountUI();
 runGateCheck();

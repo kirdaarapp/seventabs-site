@@ -19,9 +19,9 @@
 <meta name="twitter:description" content="Free to start. $19/mo Pro with a 30-day free trial, no card required. Custom pricing for larger teams.">
 <meta name="twitter:image" content="https://7tabs.org/assets/logo.png">
 
-<link rel="stylesheet" href="assets/site.css?v=9aadaa297c2b">
-<link rel="stylesheet" href="assets/home.css?v=9aadaa297c2b">
-<link rel="stylesheet" href="assets/pricing.css?v=9aadaa297c2b">
+<link rel="stylesheet" href="assets/site.css?v=891227a2fc99">
+<link rel="stylesheet" href="assets/home.css?v=891227a2fc99">
+<link rel="stylesheet" href="assets/pricing.css?v=891227a2fc99">
 </head>
 <body>
 <canvas id="fx" aria-hidden="true"></canvas>
@@ -134,6 +134,11 @@
         <span><svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Cancel anytime</span>
       </div>
 
+      <div class="billing-toggle" id="billingToggle" role="group" aria-label="Billing period">
+        <button type="button" class="billing-toggle-opt active" data-period="monthly">Monthly</button>
+        <button type="button" class="billing-toggle-opt" data-period="yearly">Yearly <span class="billing-toggle-save">save ~13%</span></button>
+      </div>
+
       <div class="pricing-grid">
 
         <div class="plan" data-animate>
@@ -151,7 +156,7 @@
 
         <div class="plan featured" data-animate>
           <h3>Pro</h3>
-          <div class="price">$19<span>/mo</span></div>
+          <div class="price" id="proPrice">$19<span>/mo</span></div>
           <p class="desc">For a growing team across branches.</p>
           <ul>
             <li><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Unlimited branches</li>
@@ -162,7 +167,7 @@
           </ul>
           <button class="btn btn-primary" type="button" id="proBtn">Start free trial</button>
           <div class="guarantee"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> 30-day trial, no card required</div>
-          <p class="modal-sub" style="text-align:center;margin:10px 0 0;font-size:13px"><a href="checkout.html">Already trialing? Upgrade now →</a></p>
+          <p class="modal-sub" style="text-align:center;margin:10px 0 0;font-size:13px"><a href="checkout.html" id="upgradeLink">Already trialing? Upgrade now →</a></p>
         </div>
 
         <div class="plan" data-animate>
@@ -217,10 +222,28 @@
   </div>
 </footer>
 
-<script type="module" src="assets/site.js?v=9aadaa297c2b"></script>
+<script type="module" src="assets/site.js?v=891227a2fc99"></script>
 <script>
   document.getElementById('starterBtn').addEventListener('click', () => document.getElementById('navAppBtn').click());
   document.getElementById('proBtn').addEventListener('click', () => document.getElementById('navAppBtn').click());
+
+  // Monthly/yearly toggle for the Pro card — purely a display + link
+  // change here (creating the trial and picking Monthly vs Yearly to
+  // actually PAY are two different steps: this page's "Start free
+  // trial" always just opens sign-in, same as before; the period
+  // choice only matters once someone is upgrading, which is why it's
+  // threaded through to checkout.html via ?plan=).
+  const proPrice = document.getElementById('proPrice');
+  const upgradeLink = document.getElementById('upgradeLink');
+  document.querySelectorAll('#billingToggle .billing-toggle-opt').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#billingToggle .billing-toggle-opt').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      const yearly = btn.dataset.period === 'yearly';
+      proPrice.innerHTML = yearly ? '$199<span>/yr</span>' : '$19<span>/mo</span>';
+      upgradeLink.href = yearly ? 'checkout.html?plan=yearly' : 'checkout.html';
+    });
+  });
 </script>
 
 </body>

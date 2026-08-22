@@ -186,6 +186,23 @@ nav.wrap{display:flex;align-items:center;justify-content:space-between;padding-t
 .btn-ghost{background:rgba(255,255,255,.04);color:var(--ink);border-color:rgba(255,255,255,.14)}
 .btn-ghost:hover{background:rgba(255,255,255,.09);transform:translateY(-2px)}
 
+/* Monthly/yearly billing-period toggle — shared here (not a page CSS
+   file) since it's used on both pricing.html and checkout.html. Same
+   pill-button language as .cat-nav/.related-chip elsewhere. */
+.billing-toggle{
+  display:flex;justify-content:center;gap:4px;margin:0 0 24px;
+  background:var(--panel);border:1px solid var(--panel-border);
+  border-radius:999px;padding:4px;width:fit-content;margin-left:auto;margin-right:auto;
+}
+.billing-toggle-opt{
+  border:0;background:none;color:var(--ink-dim);font-size:14px;font-weight:600;
+  padding:9px 20px;border-radius:999px;cursor:pointer;font-family:inherit;
+  transition:background .18s ease,color .18s ease;
+}
+.billing-toggle-opt.active{background:var(--accent-grad);color:#fff}
+.billing-toggle-save{font-size:11px;font-weight:700;margin-left:4px;color:var(--accent-2)}
+.billing-toggle-opt.active .billing-toggle-save{color:rgba(255,255,255,.85)}
+
 /* Section headers (shared layout, page CSS may still set --eyebrow color etc.) */
 .section-head{text-align:center;max-width:640px;margin:0 auto 56px}
 .eyebrow{color:var(--accent);font-weight:700;font-size:13.5px;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:12px}

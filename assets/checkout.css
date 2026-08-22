@@ -27,6 +27,15 @@
 .checkout-sub{color:var(--ink-dim);font-size:14.5px;margin:0 0 22px}
 
 .checkout-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:44px;align-items:start}
+/* Its own display:grid otherwise overrides [hidden]'s UA display:none
+   at equal specificity (both are single-selector rules, and this one
+   comes later in the cascade) — showGate() in checkout.js sets/clears
+   the hidden attribute correctly, but without this rule the grid stays
+   visually rendered regardless, letting the sign-in gate and the
+   payment form show on top of each other at once. The four
+   .checkout-panel gates never had this problem since that class sets
+   no display of its own. */
+.checkout-grid[hidden]{display:none}
 @media (max-width:760px){.checkout-grid{grid-template-columns:1fr}}
 
 /* Animated glassy card visual — tilts in real 3D like a card in a wallet
