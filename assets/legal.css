@@ -1,0 +1,56 @@
+/* Layout for privacy.html / terms.html — long-form text, not a marketing
+   hero. A sticky side table-of-contents on wide screens, single column
+   with the TOC collapsed into a horizontal strip on narrow ones. */
+
+.legal-hero{padding:56px 0 8px}
+.legal-hero .eyebrow{margin-bottom:10px}
+.legal-hero h1{font-size:clamp(30px,4vw,42px);margin:0 0 10px;letter-spacing:-.5px;font-weight:800}
+.legal-updated{color:var(--ink-faint);font-size:13.5px;margin:0}
+
+.legal-body{
+  display:grid;grid-template-columns:220px minmax(0,1fr);gap:52px;
+  padding:40px 0 100px;align-items:start;
+}
+
+.legal-toc{
+  position:sticky;top:96px;display:flex;flex-direction:column;gap:1px;
+  font-size:13.5px;max-height:calc(100vh - 130px);overflow-y:auto;
+}
+.legal-toc a{
+  color:var(--ink-faint);text-decoration:none;padding:7px 0 7px 13px;
+  border-left:2px solid var(--panel-border);transition:color .15s,border-color .15s;
+}
+.legal-toc a:hover{color:var(--ink-dim)}
+.legal-toc a.active{color:var(--ink);border-left-color:var(--accent);font-weight:600}
+
+.legal-content{max-width:720px;color:var(--ink-dim);font-size:15.5px}
+.legal-content > section{scroll-margin-top:96px}
+.legal-content h2{color:var(--ink);font-size:21px;margin:44px 0 14px;letter-spacing:-.2px}
+.legal-content section:first-child h2{margin-top:0}
+.legal-content h3{color:var(--ink);font-size:15.5px;margin:22px 0 8px}
+.legal-content p{margin:0 0 14px}
+.legal-content ul{margin:0 0 14px;padding-left:22px}
+.legal-content li{margin:0 0 8px}
+.legal-content a{color:var(--accent-2)}
+.legal-content strong{color:var(--ink)}
+
+.legal-table-wrap{overflow-x:auto;margin:0 0 20px;border:1px solid var(--panel-border);border-radius:12px}
+.legal-content table{width:100%;border-collapse:collapse;font-size:14px;min-width:480px}
+.legal-content th,.legal-content td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--panel-border)}
+.legal-content tr:last-child td{border-bottom:0}
+.legal-content th{color:var(--ink);font-weight:600;background:rgba(255,255,255,.02)}
+
+.legal-note{
+  background:rgba(108,99,255,.07);border:1px solid rgba(108,99,255,.25);
+  border-radius:12px;padding:16px 18px;margin:0 0 22px;font-size:14px;color:var(--ink-dim);
+}
+.legal-note strong{color:var(--ink)}
+
+@media (max-width:860px){
+  .legal-body{grid-template-columns:1fr;padding-top:24px}
+  .legal-toc{
+    position:static;flex-direction:row;flex-wrap:wrap;gap:8px 16px;
+    max-height:none;padding-bottom:22px;border-bottom:1px solid var(--panel-border);margin-bottom:8px;
+  }
+  .legal-toc a{border-left:0;padding:0}
+}

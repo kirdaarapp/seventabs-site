@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="/app/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="SevenTabs - Multi-platform business accounting and light-ERP app">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="seventabs">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>seventabs</title>
+  <link rel="manifest" href="manifest.json">
+  <script>
+    // Serve CanvasKit from this same origin instead of Google's CDN — keeps
+    // the app usable behind network policies that don't allow gstatic.com.
+    window.flutterConfiguration = { canvasKitBaseUrl: "canvaskit/" };
+  </script>
+  <script>
+    // A device that visited before Flutter's web service worker was
+    // deprecated (it now just self-unregisters and reloads once
+    // activated — see flutter_service_worker.js) can be left running
+    // that old, still-active worker for a long time: mobile browsers in
+    // particular don't always check for a new one promptly, so the app
+    // can look permanently stuck on whatever build was cached when it
+    // installed — a fresh laptop tab updates the moment it reloads, a
+    // phone that opened the app once weeks ago may never get the
+    // chance to. This reloads the page (once per tab session, so it
+    // can't loop) the moment ANY newer service worker actually takes
+    // over, so an update that's already been detected in the
+    // background is applied immediately instead of waiting for the
+    // user to notice something's stale and manually refresh.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!sessionStorage.getItem('seventabsSwReloaded')) {
+          sessionStorage.setItem('seventabsSwReloaded', '1');
+          window.location.reload();
+        }
+      });
+      // A PWA icon tap on Android/iOS often just resumes an already-open
+      // tab's frozen process from OS memory instead of actually
+      // navigating — no network request happens at all, so the browser
+      // never gets the chance to notice a new service worker exists, and
+      // the reload-on-update logic above never fires either. Explicitly
+      // asking for an update check every time the tab becomes visible
+      // again closes that gap: it's what makes "leave the app running in
+      // the background for days" behave the same as "close it and open
+      // it fresh."
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          navigator.serviceWorker.getRegistration().then((reg) => reg && reg.update());
+        }
+      });
+    }
+  </script>
+</head>
+<body>
+  <!--
+    Nothing here belongs to Flutter — it's a plain HTML/CSS loading state
+    shown the instant the page loads, before a single byte of Flutter's
+    JS/Wasm has even downloaded. Without this, the page is just an empty
+    <body> the whole time Flutter is booting, so any slow step (a bad
+    connection re-fetching everything after a "clear site data", a
+    CanvasKit/Wasm compile stall, the local database initializing) reads
+    as a silent blank white screen with zero signal that anything is even
+    trying to happen. Flutter's own UI paints full-screen over this the
+    moment it's ready, so nothing needs to explicitly remove it on
+    success — it only needs to turn into something actionable if Flutter
+    *never* gets there.
+  -->
+  <div id="seventabs-loading" style="
+      position: fixed; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 16px;
+      background: #111318; color: #e4e2e6; font-family: sans-serif;
+      text-align: center; padding: 24px; box-sizing: border-box;">
+    <div style="
+        width: 40px; height: 40px; border-radius: 50%;
+        border: 4px solid #3a3d45; border-top-color: #6C63FF;
+        animation: seventabs-spin 0.9s linear infinite;"></div>
+    <div id="seventabs-loading-text">Loading SevenTabs…</div>
+    <div id="seventabs-loading-stuck" style="display: none; max-width: 320px;">
+      <p style="opacity: 0.8; font-size: 14px;">
+        This is taking longer than it should — usually a slow or interrupted
+        connection while the app re-downloads after an update or a cleared
+        cache.
+      </p>
+      <button onclick="window.location.reload()" style="
+          padding: 10px 20px; border-radius: 8px; border: none;
+          background: #6C63FF; color: #111318; font-weight: 700;
+          font-size: 15px;">Reload</button>
+    </div>
+  </div>
+  <style>
+    @keyframes seventabs-spin { to { transform: rotate(360deg); } }
+  </style>
+  <script>
+    // Flutter's first frame paints over #seventabs-loading completely — this
+    // never fires on the success path. It only exists to upgrade "stuck
+    // on the spinner forever" into "here's an actual message and a button".
+    setTimeout(function () {
+      var stuck = document.getElementById('seventabs-loading-stuck');
+      var text = document.getElementById('seventabs-loading-text');
+      if (stuck) stuck.style.display = 'block';
+      if (text) text.textContent = 'Still loading…';
+    }, 12000);
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

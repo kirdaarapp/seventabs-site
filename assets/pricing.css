@@ -1,0 +1,5 @@
+/* Page-specific styles for pricing.html. Reuses .pricing-grid / .plan /
+   .trust-bar / .price-note / .cta-banner as-is from home.css so the plan
+   cards look identical wherever they appear. */
+.pricing-hero{padding:72px 0 36px;text-align:center}
+.pricing-hero p{color:var(--ink-dim);font-size:17px;max-width:560px;margin:0 auto}

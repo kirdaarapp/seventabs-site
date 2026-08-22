@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terms of Service — SevenTabs</title>
+<meta name="description" content="The terms that govern using SevenTabs — accounts, billing, acceptable use, your data, and how the service is provided.">
+<link rel="canonical" href="https://7tabs.org/terms.html">
+<link rel="icon" href="assets/favicon.png">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SevenTabs">
+<meta property="og:title" content="Terms of Service — SevenTabs">
+<meta property="og:description" content="The terms that govern using SevenTabs — accounts, billing, acceptable use, your data, and how the service is provided.">
+<meta property="og:url" content="https://7tabs.org/terms.html">
+<meta property="og:image" content="https://7tabs.org/assets/logo.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Terms of Service — SevenTabs">
+<meta name="twitter:description" content="The terms that govern using SevenTabs — accounts, billing, acceptable use, your data, and how the service is provided.">
+<meta name="twitter:image" content="https://7tabs.org/assets/logo.png">
+
+<link rel="stylesheet" href="assets/site.css?v=37c76261678b">
+<link rel="stylesheet" href="assets/legal.css?v=37c76261678b">
+</head>
+<body>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<header>
+  <nav class="wrap">
+    <a class="brand" href="index.html">
+      <img src="assets/logo.png" alt="SevenTabs logo">
+      SevenTabs
+    </a>
+    <div class="nav-links">
+      <a href="features.html">Features</a>
+      <a href="how-it-works.html">How it works</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="download.html">Download</a>
+      <a href="help.html">Help</a>
+    </div>
+    <button class="nav-cta" id="navAppBtn" type="button">Get SevenTabs →</button>
+  </nav>
+</header>
+
+<div class="modal-overlay" id="signInOverlay" role="dialog" aria-modal="true" aria-labelledby="signInTitle">
+  <div class="modal">
+    <button class="modal-close" id="closeSignIn" type="button" aria-label="Close">&times;</button>
+    <img src="assets/logo.png" alt="" width="36" height="36" style="border-radius:8px;margin-bottom:16px">
+    <h3 id="signInTitle">Sign in to SevenTabs</h3>
+    <p class="modal-sub" id="signInSubtitle">Owners and team members sign in with the email they were set up with.</p>
+    <form id="signInForm">
+      <label class="field-label" for="siEmail">Email</label>
+      <input class="field-input" id="siEmail" type="email" autocomplete="email" required>
+      <label class="field-label" for="siPassword">Password</label>
+      <input class="field-input" id="siPassword" type="password" autocomplete="current-password" required>
+      <div class="modal-error" id="signInError" hidden></div>
+      <button class="btn btn-primary" type="submit" id="signInSubmit" style="width:100%;justify-content:center;margin-top:6px">Sign in</button>
+    </form>
+    <p class="modal-sub" id="signInFooter" style="margin-top:18px">New business? <button type="button" id="goToSignUpBtn" class="link-btn">Create your account →</button></p>
+
+    <div id="signUpPanel" hidden>
+      <form id="signUpForm">
+        <label class="field-label" for="suBusiness">Business name</label>
+        <input class="field-input" id="suBusiness" type="text" autocomplete="organization" required>
+        <label class="field-label" for="suName">Your name</label>
+        <input class="field-input" id="suName" type="text" autocomplete="name" required>
+        <label class="field-label" for="suEmail">Email</label>
+        <input class="field-input" id="suEmail" type="email" autocomplete="email" required>
+        <label class="field-label" for="suPhone">Phone number</label>
+        <input class="field-input" id="suPhone" type="tel" autocomplete="tel" required>
+        <label class="field-label" for="suPassword">Password</label>
+        <input class="field-input" id="suPassword" type="password" autocomplete="new-password" minlength="8" required>
+        <p class="modal-sub" style="margin:6px 0 0;font-size:12px">At least 8 characters, with uppercase, lowercase, a number and a symbol.</p>
+        <label class="field-label" for="suPasswordConfirm">Confirm password</label>
+        <input class="field-input" id="suPasswordConfirm" type="password" autocomplete="new-password" minlength="8" required>
+        <div class="modal-error" id="signUpError" hidden></div>
+        <button class="btn btn-primary" type="submit" id="signUpSubmit" style="width:100%;justify-content:center;margin-top:6px">Create account</button>
+      </form>
+      <p class="modal-sub" style="margin-top:18px">Already have an account? <button type="button" id="signUpBackBtn" class="link-btn">Sign in instead</button></p>
+    </div>
+
+    <div id="signInOtp" hidden>
+      <div class="otp-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M22 6l-10 7L2 6"/></svg></div>
+      <p class="modal-sub" id="otpText" style="text-align:center"></p>
+      <div class="otp-boxes" id="otpBoxes">
+        <input class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" aria-label="Digit 1">
+        <input class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 2">
+        <input class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 3">
+        <input class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 4">
+        <input class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 5">
+        <input class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 6">
+      </div>
+      <div class="modal-error" id="otpError" hidden></div>
+      <button class="btn btn-primary" type="button" id="otpVerifyBtn" style="width:100%;justify-content:center;margin-top:20px">Verify &amp; continue</button>
+      <p class="modal-sub" style="margin-top:16px;text-align:center">
+        <button type="button" id="otpResendBtn" class="link-btn">Resend code</button>
+      </p>
+      <p class="modal-sub" style="text-align:center;margin-bottom:0">
+        <button type="button" id="otpBackBtn" class="link-btn">Not you? Use a different account</button>
+      </p>
+    </div>
+
+    <div id="signInSuccess" hidden>
+      <div class="icon" style="margin:0 0 16px"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <p id="signInSuccessText" style="color:var(--ink-dim);font-size:14.5px;margin:0 0 18px"></p>
+      <a class="btn btn-primary" id="signInDownloadBtn" style="width:100%;justify-content:center;display:none" href="#" download></a>
+      <p class="modal-sub" style="margin-top:14px;text-align:center">
+        <a href="/app/" id="signInBrowserFallback">Or open SevenTabs in your browser →</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="legal-hero wrap">
+    <div class="eyebrow">Legal</div>
+    <h1>Terms of Service</h1>
+    <p class="legal-updated">Last updated August 6, 2026</p>
+  </div>
+
+  <div class="legal-body wrap">
+    <nav class="legal-toc" id="legalToc" aria-label="Sections">
+      <a href="#acceptance">Acceptance of terms</a>
+      <a href="#service">The service</a>
+      <a href="#accounts">Accounts &amp; eligibility</a>
+      <a href="#billing">Plans &amp; billing</a>
+      <a href="#acceptable-use">Acceptable use</a>
+      <a href="#your-data">Your data</a>
+      <a href="#third-party">Third-party services</a>
+      <a href="#availability">Availability &amp; offline mode</a>
+      <a href="#termination">Termination</a>
+      <a href="#disclaimers">Disclaimers &amp; liability</a>
+      <a href="#governing-law">Governing law &amp; disputes</a>
+      <a href="#changes">Changes to these terms</a>
+      <a href="#contact">Contact</a>
+    </nav>
+
+    <div class="legal-content">
+
+      <section id="acceptance">
+        <h2>Acceptance of terms</h2>
+        <p>By creating a SevenTabs account or using the SevenTabs website, browser app, or Windows/Android apps (together, "the Service"), you agree to these Terms of Service and to our <a href="privacy.html">Privacy Policy</a>. If you're accepting on behalf of a business, you're confirming you have authority to bind that business to these terms.</p>
+      </section>
+
+      <section id="service">
+        <h2>The service</h2>
+        <p>SevenTabs is an accounting and light-ERP application — invoicing, inventory, purchasing, payroll, multi-branch management and double-entry bookkeeping — for retail, trading and service businesses. It's local-first: your device keeps its own copy of your data for speed and offline access, and syncs it with our servers so your team stays in sync across devices.</p>
+      </section>
+
+      <section id="accounts">
+        <h2>Accounts &amp; eligibility</h2>
+        <ul>
+          <li>You must provide accurate information when creating an account, and keep it up to date.</li>
+          <li>You're responsible for keeping your login credentials confidential and for all activity that happens under your account. Tell us immediately if you suspect unauthorized access.</li>
+          <li>An account Owner is responsible for the team members they invite and the roles/permissions assigned to them within their company.</li>
+          <li>You must be legally able to enter into a binding contract to create an account.</li>
+        </ul>
+      </section>
+
+      <section id="billing">
+        <h2>Plans &amp; billing</h2>
+        <p>SevenTabs currently offers a free Starter plan (single branch, single user), a paid Pro plan with a 30-day free trial, and a custom Business plan for larger teams — see <a href="pricing.html">Pricing</a> for current details. Paid subscriptions are processed by Stripe; by subscribing you authorize us to charge your chosen payment method for the plan you select.</p>
+        <p>We're in early access: at present, nothing is automatically restricted when a trial ends or a plan lapses — your account keeps working. Before we turn on automatic billing enforcement, we'll give advance notice and prompt you to pick a plan from inside the app. This section will be updated once that changes.</p>
+        <p>You can downgrade or cancel a paid plan at any time from the Billing screen inside the app. There are no long-term lock-in contracts.</p>
+      </section>
+
+      <section id="acceptable-use">
+        <h2>Acceptable use</h2>
+        <p>You agree not to:</p>
+        <ul>
+          <li>Use the Service for any unlawful purpose, or in a way that violates any applicable law or regulation.</li>
+          <li>Attempt to access another company's data, or any part of the Service you're not authorized to access.</li>
+          <li>Attempt to reverse-engineer, decompile, or otherwise extract the source code of the Service, except where applicable law expressly permits it.</li>
+          <li>Interfere with or disrupt the integrity or performance of the Service (e.g. attempting to overload our infrastructure).</li>
+          <li>Resell or sublicense the Service to third parties without our written agreement, outside of normal use by your own team members.</li>
+          <li>Upload content that is unlawful, infringing, or that you don't have the right to submit.</li>
+        </ul>
+        <p>We may suspend or terminate accounts that violate this section — see <a href="#termination">Termination</a> below.</p>
+      </section>
+
+      <section id="your-data">
+        <h2>Your data</h2>
+        <p>You own the business data you put into SevenTabs — your invoices, customers, inventory, financial records and everything else. We don't claim ownership of it. By using the Service, you grant us a limited license to host, store, process, and transmit that data solely as necessary to provide the Service to you (e.g. syncing it across your devices, generating your reports and PDFs).</p>
+        <p>You're responsible for the accuracy and legality of the data you enter, and for having the right to enter any third-party information (e.g. your customers' contact details) into the system.</p>
+        <p>See our <a href="privacy.html">Privacy Policy</a> for how we handle and protect this data, and how to export or delete it.</p>
+      </section>
+
+      <section id="third-party">
+        <h2>Third-party services</h2>
+        <p>SevenTabs relies on third-party infrastructure to operate — Supabase for database, authentication and file storage, Stripe for payment processing, and Resend for transactional email delivery. Your use of features that depend on these providers is also subject to their own applicable terms. We select and vet these providers carefully, but we aren't responsible for outages or issues originating entirely on their end.</p>
+      </section>
+
+      <section id="availability">
+        <h2>Availability &amp; offline mode</h2>
+        <p>We aim to keep SevenTabs available and reliable, but we don't guarantee uninterrupted or error-free operation. Because SevenTabs is local-first, you can keep reading and browsing your data offline even during an outage or connectivity loss; new writes are held back (read-only mode) until you're back online, specifically to prevent conflicting edits from two disconnected devices.</p>
+        <p>SevenTabs is under active development. Features may be added, changed, or occasionally removed as the product evolves — we'll do our best to communicate meaningful changes in advance.</p>
+      </section>
+
+      <section id="termination">
+        <h2>Termination</h2>
+        <p>You may stop using the Service and close your account at any time. We may suspend or terminate an account that violates these terms, poses a security risk, or where required by law, with notice where reasonably possible. Upon termination, your right to use the Service ends, though certain provisions of these terms (e.g. data ownership, liability limits) survive termination.</p>
+      </section>
+
+      <section id="disclaimers">
+        <h2>Disclaimers &amp; liability</h2>
+        <p>The Service is provided "as is" and "as available," without warranties of any kind, express or implied, to the maximum extent permitted by law. We don't warrant that the Service will be error-free, uninterrupted, or that it will meet every requirement of your specific business.</p>
+        <p>SevenTabs is a tool to help you manage and record your business's finances — it is not a substitute for professional accounting, tax, or legal advice. You're responsible for reviewing your own financial records and consulting a qualified professional for advice specific to your business and jurisdiction.</p>
+        <p>To the maximum extent permitted by law, SevenTabs will not be liable for any indirect, incidental, special, consequential, or punitive damages, or for any loss of profits, revenue, data, or business opportunity, arising out of or related to your use of the Service. Our total liability for any claim relating to the Service is limited to the amount you paid us for the Service in the 12 months preceding the claim, or $100, whichever is greater.</p>
+      </section>
+
+      <section id="governing-law">
+        <h2>Governing law &amp; disputes</h2>
+        <p>These terms are intended to be interpreted fairly and in good faith. If a dispute arises, we ask that you contact us first at the address below so we can try to resolve it directly before pursuing any formal process. Where formal resolution is necessary, it will proceed under the law and courts applicable to where SevenTabs is operated. If you need this specified precisely for a formal contract or procurement process, contact us and we'll confirm the exact operating entity and jurisdiction in writing.</p>
+      </section>
+
+      <section id="changes">
+        <h2>Changes to these terms</h2>
+        <p>We may update these terms from time to time as the Service evolves. If we make a material change, we'll update the date at the top of this page and, where appropriate, notify account Owners by email. Continuing to use SevenTabs after a change takes effect means you accept the updated terms.</p>
+      </section>
+
+      <section id="contact">
+        <h2>Contact</h2>
+        <p>Questions about these terms? Reach us at <a href="mailto:support@7tabs.org">support@7tabs.org</a>, or use the customer care button on any page of this site.</p>
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-row">
+      <a class="brand" href="index.html">
+        <img src="assets/logo.png" alt="SevenTabs logo">
+        SevenTabs
+      </a>
+      <div class="foot-links">
+        <a href="features.html">Features</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="help.html">Help</a>
+        <a href="help.html#contact">Contact</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <button id="footAppBtn" type="button" style="background:none;border:0;color:inherit;font:inherit;cursor:pointer;padding:0">Get SevenTabs</button>
+      </div>
+    </div>
+    <div class="foot-copy">© <span id="year"></span> SevenTabs. All rights reserved.</div>
+  </div>
+</footer>
+
+<script type="module" src="assets/site.js?v=37c76261678b"></script>
+<script>
+  const legalToc = document.getElementById('legalToc');
+  const tocLinks = Array.from(legalToc.querySelectorAll('a'));
+  const sections = tocLinks
+    .map((a) => document.querySelector(a.getAttribute('href')))
+    .filter(Boolean);
+  const setActive = (id) => {
+    tocLinks.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === `#${id}`));
+  };
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const visible = entries.filter((e) => e.isIntersecting);
+      if (visible.length) setActive(visible[0].target.id);
+    },
+    { rootMargin: '-96px 0px -70% 0px' }
+  );
+  sections.forEach((s) => observer.observe(s));
+  if (sections[0]) setActive(sections[0].id);
+</script>
+
+</body>
+</html>

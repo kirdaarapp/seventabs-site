@@ -1,0 +1,108 @@
+/* Page-specific styles for checkout.html — the embedded Stripe Elements
+   upgrade flow, styled after the animated reference the user shared:
+   glassy card visual on the left, real payment form on the right, with
+   processing/success states driven by assets/checkout.js. */
+
+.checkout-hero{padding:56px 0 80px}
+
+.checkout-steps{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  margin:0 auto 36px;font-size:13px;font-weight:700;color:var(--ink-faint);
+}
+.step-sep{width:28px;height:1px;background:var(--panel-border)}
+.step-dot{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;
+  border:1px solid var(--panel-border);background:var(--panel);
+}
+.step-dot.active{color:var(--ink);border-color:rgba(108,99,255,.5)}
+.step-dot.done{color:var(--accent-2);border-color:rgba(156,149,255,.4)}
+
+.checkout-card{
+  max-width:920px;margin:0 auto;background:var(--panel);border:1px solid var(--panel-border);
+  border-radius:24px;box-shadow:var(--shadow);padding:48px;position:relative;overflow:hidden;
+}
+
+.checkout-panel{text-align:center;max-width:420px;margin:0 auto;padding:24px 0}
+.checkout-panel h2{margin:0 0 10px}
+.checkout-sub{color:var(--ink-dim);font-size:14.5px;margin:0 0 22px}
+
+.checkout-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:44px;align-items:start}
+@media (max-width:760px){.checkout-grid{grid-template-columns:1fr}}
+
+/* Animated glassy card visual */
+.pay-card{
+  position:relative;border-radius:20px;padding:2px;margin-bottom:24px;
+  background:linear-gradient(160deg,#262759,#15162e);
+  box-shadow:0 20px 44px -18px rgba(46,42,120,.7);
+  transition:box-shadow .4s ease;
+}
+.pay-card-face{
+  border-radius:18px;padding:26px 24px;min-height:170px;position:relative;overflow:hidden;
+  background:linear-gradient(150deg,#221955 0%,#1e1f3f 60%,#171833 100%);
+}
+.pay-card-face::before{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(circle at 20% 0%, rgba(108,99,255,.35), transparent 55%);
+  pointer-events:none;
+}
+.pay-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;position:relative}
+.pay-card-chip{
+  width:34px;height:24px;border-radius:5px;
+  background:linear-gradient(135deg,#f4d976,#c9a63a);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);
+}
+.pay-card-tier{
+  font-size:11px;font-weight:800;letter-spacing:1.5px;color:var(--ink-dim);
+}
+.pay-card-number{
+  font-size:19px;letter-spacing:3px;font-weight:700;color:var(--ink);
+  margin-bottom:26px;position:relative;
+}
+.pay-card-bottom{display:flex;align-items:flex-end;justify-content:space-between;position:relative}
+.pay-card-label{font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-faint);margin-bottom:3px}
+.pay-card-value{font-size:13px;font-weight:700;color:var(--ink)}
+.pay-card-brand{font-size:14px;font-weight:800;color:var(--ink);opacity:.9;font-style:italic}
+
+.pay-card-status{
+  text-align:center;padding:14px 10px 4px;font-size:13.5px;font-weight:600;color:var(--ink-dim);
+}
+
+/* Processing: pulsing accent glow ring */
+.pay-card.processing .pay-card{box-shadow:0 0 0 0 rgba(108,99,255,.6)}
+.pay-card.processing{animation:payPulse 1.4s ease-in-out infinite}
+@keyframes payPulse{
+  0%,100%{box-shadow:0 20px 44px -18px rgba(46,42,120,.7), 0 0 0 0 rgba(108,99,255,.5)}
+  50%{box-shadow:0 20px 44px -18px rgba(46,42,120,.7), 0 0 0 10px rgba(108,99,255,0)}
+}
+
+/* Success: settles into a teal glow */
+.pay-card.success{box-shadow:0 20px 44px -18px rgba(20,150,130,.55), 0 0 0 3px rgba(156,149,255,.35)}
+.pay-card.success .pay-card-face::before{
+  background:radial-gradient(circle at 20% 0%, rgba(156,149,255,.4), transparent 55%);
+}
+
+@media (prefers-reduced-motion: reduce){
+  .pay-card.processing{animation:none}
+}
+
+.checkout-badges{display:flex;flex-direction:column;gap:10px;font-size:13px;color:var(--ink-dim)}
+.checkout-badges span{display:flex;align-items:center;gap:8px}
+.checkout-badges svg{width:16px;height:16px;stroke:var(--accent-2);fill:none;stroke-width:2.2;flex:none}
+
+.checkout-right h2{margin:0 0 6px}
+.checkout-amount-row{
+  display:flex;justify-content:space-between;align-items:baseline;
+  background:var(--bg-soft);border:1px solid var(--panel-border);border-radius:12px;
+  padding:14px 18px;margin:18px 0 20px;font-weight:700;font-size:15px;
+}
+.checkout-amount-period{font-size:12px;font-weight:600;color:var(--ink-faint);margin-left:2px}
+
+.payment-element{
+  background:var(--bg-soft);border:1px solid var(--panel-border);border-radius:12px;padding:16px;
+}
+.checkout-fineprint{color:var(--ink-faint);font-size:12.5px;margin-top:16px;text-align:center}
+
+.icon-ok{background:linear-gradient(160deg,rgba(156,149,255,.32),rgba(156,149,255,.1));border-color:rgba(156,149,255,.5)}
+.icon-ok svg{stroke:var(--accent-2)}
+
+#paySubmitBtn[disabled]{opacity:.6;cursor:default}

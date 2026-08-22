@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — SevenTabs</title>
+<meta name="description" content="What SevenTabs collects, why, who it's shared with, and how to access, export or delete your data.">
+<link rel="canonical" href="https://7tabs.org/privacy.html">
+<link rel="icon" href="assets/favicon.png">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SevenTabs">
+<meta property="og:title" content="Privacy Policy — SevenTabs">
+<meta property="og:description" content="What SevenTabs collects, why, who it's shared with, and how to access, export or delete your data.">
+<meta property="og:url" content="https://7tabs.org/privacy.html">
+<meta property="og:image" content="https://7tabs.org/assets/logo.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Privacy Policy — SevenTabs">
+<meta name="twitter:description" content="What SevenTabs collects, why, who it's shared with, and how to access, export or delete your data.">
+<meta name="twitter:image" content="https://7tabs.org/assets/logo.png">
+
+<link rel="stylesheet" href="assets/site.css?v=37c76261678b">
+<link rel="stylesheet" href="assets/legal.css?v=37c76261678b">
+</head>
+<body>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<header>
+  <nav class="wrap">
+    <a class="brand" href="index.html">
+      <img src="assets/logo.png" alt="SevenTabs logo">
+      SevenTabs
+    </a>
+    <div class="nav-links">
+      <a href="features.html">Features</a>
+      <a href="how-it-works.html">How it works</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="download.html">Download</a>
+      <a href="help.html">Help</a>
+    </div>
+    <button class="nav-cta" id="navAppBtn" type="button">Get SevenTabs →</button>
+  </nav>
+</header>
+
+<div class="modal-overlay" id="signInOverlay" role="dialog" aria-modal="true" aria-labelledby="signInTitle">
+  <div class="modal">
+    <button class="modal-close" id="closeSignIn" type="button" aria-label="Close">&times;</button>
+    <img src="assets/logo.png" alt="" width="36" height="36" style="border-radius:8px;margin-bottom:16px">
+    <h3 id="signInTitle">Sign in to SevenTabs</h3>
+    <p class="modal-sub" id="signInSubtitle">Owners and team members sign in with the email they were set up with.</p>
+    <form id="signInForm">
+      <label class="field-label" for="siEmail">Email</label>
+      <input class="field-input" id="siEmail" type="email" autocomplete="email" required>
+      <label class="field-label" for="siPassword">Password</label>
+      <input class="field-input" id="siPassword" type="password" autocomplete="current-password" required>
+      <div class="modal-error" id="signInError" hidden></div>
+      <button class="btn btn-primary" type="submit" id="signInSubmit" style="width:100%;justify-content:center;margin-top:6px">Sign in</button>
+    </form>
+    <p class="modal-sub" id="signInFooter" style="margin-top:18px">New business? <button type="button" id="goToSignUpBtn" class="link-btn">Create your account →</button></p>
+
+    <div id="signUpPanel" hidden>
+      <form id="signUpForm">
+        <label class="field-label" for="suBusiness">Business name</label>
+        <input class="field-input" id="suBusiness" type="text" autocomplete="organization" required>
+        <label class="field-label" for="suName">Your name</label>
+        <input class="field-input" id="suName" type="text" autocomplete="name" required>
+        <label class="field-label" for="suEmail">Email</label>
+        <input class="field-input" id="suEmail" type="email" autocomplete="email" required>
+        <label class="field-label" for="suPhone">Phone number</label>
+        <input class="field-input" id="suPhone" type="tel" autocomplete="tel" required>
+        <label class="field-label" for="suPassword">Password</label>
+        <input class="field-input" id="suPassword" type="password" autocomplete="new-password" minlength="8" required>
+        <p class="modal-sub" style="margin:6px 0 0;font-size:12px">At least 8 characters, with uppercase, lowercase, a number and a symbol.</p>
+        <label class="field-label" for="suPasswordConfirm">Confirm password</label>
+        <input class="field-input" id="suPasswordConfirm" type="password" autocomplete="new-password" minlength="8" required>
+        <div class="modal-error" id="signUpError" hidden></div>
+        <button class="btn btn-primary" type="submit" id="signUpSubmit" style="width:100%;justify-content:center;margin-top:6px">Create account</button>
+      </form>
+      <p class="modal-sub" style="margin-top:18px">Already have an account? <button type="button" id="signUpBackBtn" class="link-btn">Sign in instead</button></p>
+    </div>
+
+    <div id="signInOtp" hidden>
+      <div class="otp-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M22 6l-10 7L2 6"/></svg></div>
+      <p class="modal-sub" id="otpText" style="text-align:center"></p>
+      <div class="otp-boxes" id="otpBoxes">
+        <input class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" aria-label="Digit 1">
+        <input class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 2">
+        <input class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 3">
+        <input class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 4">
+        <input class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 5">
+        <input class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 6">
+      </div>
+      <div class="modal-error" id="otpError" hidden></div>
+      <button class="btn btn-primary" type="button" id="otpVerifyBtn" style="width:100%;justify-content:center;margin-top:20px">Verify &amp; continue</button>
+      <p class="modal-sub" style="margin-top:16px;text-align:center">
+        <button type="button" id="otpResendBtn" class="link-btn">Resend code</button>
+      </p>
+      <p class="modal-sub" style="text-align:center;margin-bottom:0">
+        <button type="button" id="otpBackBtn" class="link-btn">Not you? Use a different account</button>
+      </p>
+    </div>
+
+    <div id="signInSuccess" hidden>
+      <div class="icon" style="margin:0 0 16px"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <p id="signInSuccessText" style="color:var(--ink-dim);font-size:14.5px;margin:0 0 18px"></p>
+      <a class="btn btn-primary" id="signInDownloadBtn" style="width:100%;justify-content:center;display:none" href="#" download></a>
+      <p class="modal-sub" style="margin-top:14px;text-align:center">
+        <a href="/app/" id="signInBrowserFallback">Or open SevenTabs in your browser →</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="legal-hero wrap">
+    <div class="eyebrow">Legal</div>
+    <h1>Privacy Policy</h1>
+    <p class="legal-updated">Last updated August 6, 2026</p>
+  </div>
+
+  <div class="legal-body wrap">
+    <nav class="legal-toc" id="legalToc" aria-label="Sections">
+      <a href="#overview">Overview</a>
+      <a href="#collect">What we collect</a>
+      <a href="#use">How we use it</a>
+      <a href="#share">Who we share it with</a>
+      <a href="#storage">Storage &amp; security</a>
+      <a href="#retention">Retention</a>
+      <a href="#rights">Your rights &amp; choices</a>
+      <a href="#cookies">Cookies &amp; local storage</a>
+      <a href="#children">Children's privacy</a>
+      <a href="#international">International use</a>
+      <a href="#changes">Changes to this policy</a>
+      <a href="#contact">Contact</a>
+    </nav>
+
+    <div class="legal-content">
+
+      <section id="overview">
+        <h2>Overview</h2>
+        <p>SevenTabs ("SevenTabs", "we", "us") is an accounting and business-management app for retail, trading and service businesses. This page explains what information we collect when you and your team use SevenTabs — on the website, in the browser app, and in the Windows/Android apps — why we collect it, who it's shared with, and what control you have over it.</p>
+        <p>SevenTabs is built around your business's own records: invoices, customers, inventory, payroll and the like. That data belongs to you. This policy is about how we handle it responsibly while running the service you signed up for.</p>
+      </section>
+
+      <section id="collect">
+        <h2>What we collect</h2>
+
+        <h3>Account &amp; signup information</h3>
+        <p>When you create an account: your business name, your name, email address, phone number, and a password. We never see or store your password in plain text — it's handled by our authentication provider (Supabase Auth) using standard secure hashing.</p>
+
+        <h3>The business data you enter</h3>
+        <p>Everything you and your team put into SevenTabs to run the business — customers and suppliers, invoices and purchases, inventory and stock movements, payroll and employee records, ledger entries and financial reports, photo attachments (e.g. proof of delivery, expense receipts), and any notes or documents you attach. This is fundamentally your data; we store and process it so the app can function.</p>
+
+        <h3>Device &amp; sign-in information</h3>
+        <p>To keep your account secure, we use a device-trust model: the first time you sign in on a new device or browser, we send a one-time code (OTP) to confirm it's really you. We keep a record of which devices have completed that check, along with basic session information (sign-in timestamps, general device/browser type), so we don't ask for a code every single time on a device you've already verified.</p>
+
+        <h3>Payment information</h3>
+        <p>If you subscribe to a paid plan, payment is processed directly by Stripe. We do not receive or store your full card number — Stripe handles that and gives us only what's needed to manage your subscription (e.g. plan, status, last four digits of a card for your own reference).</p>
+
+        <h3>Support &amp; communications</h3>
+        <p>If you contact us — through the in-app/site customer care widget, a support email, or a team-invite response — we keep what you send us so we can reply and so we have a record if the same issue comes up again.</p>
+      </section>
+
+      <section id="use">
+        <h2>How we use it</h2>
+        <ul>
+          <li>To provide the service itself — storing and syncing your business records across your devices and team members.</li>
+          <li>To authenticate you and keep your account secure, including the OTP device-trust check described above.</li>
+          <li>To send transactional emails you'd expect from using the product: OTP codes, team-invite emails, password resets, and reports you've explicitly scheduled to be emailed to you.</li>
+          <li>To respond to support requests and questions sent through the customer care widget or by email.</li>
+          <li>To diagnose bugs and improve reliability — for example, understanding why a sync failed for a specific account so we can fix it.</li>
+          <li>To enforce our <a href="terms.html">Terms of Service</a> and protect the security and integrity of the service (e.g. detecting abuse).</li>
+        </ul>
+        <p>We do not sell your data, and we do not use your business records (customers, invoices, financials) for advertising or to train unrelated products.</p>
+      </section>
+
+      <section id="share">
+        <h2>Who we share it with</h2>
+        <p>We use a small number of infrastructure providers to run SevenTabs. Each only receives what it needs to do its specific job — none of them are permitted to use your data for their own purposes.</p>
+        <div class="legal-table-wrap">
+          <table>
+            <thead><tr><th>Provider</th><th>What it does</th><th>What it sees</th></tr></thead>
+            <tbody>
+              <tr><td>Supabase</td><td>Database, authentication, file storage</td><td>Your account and business data, encrypted at rest and in transit</td></tr>
+              <tr><td>Stripe</td><td>Payment processing for paid plans</td><td>Billing/payment details — we never see full card numbers</td></tr>
+              <tr><td>Resend</td><td>Delivery of OTP codes, invites and scheduled report emails</td><td>The recipient email address and the message content being sent</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>We may also disclose information if required by law, or to protect the rights, property or safety of SevenTabs, our users, or others — but only to the extent legally necessary.</p>
+        <p>We do not share your business data with other companies using SevenTabs. Every request is authorized server-side by Row Level Security policies scoped to your own company — nobody, including another company's Owner, can query data that isn't theirs.</p>
+      </section>
+
+      <section id="storage">
+        <h2>Storage &amp; security</h2>
+        <p>Your business data lives in a dedicated cloud database (Postgres, hosted by Supabase), protected by Row Level Security so only authorized members of your own company can read or write it. All traffic between your device and our servers runs over HTTPS.</p>
+        <p>SevenTabs is also local-first: each device you sign in on keeps its own local copy of your data, so the app keeps working (read-only) if you lose your internet connection, and syncs back up automatically once you're back online.</p>
+        <p>No method of transmission or storage is 100% secure, and we can't guarantee absolute security — but we take reasonable, industry-standard measures to protect your information from unauthorized access, alteration, or loss.</p>
+      </section>
+
+      <section id="retention">
+        <h2>Retention</h2>
+        <p>We keep your account and business data for as long as your account is active, so you and your team can keep using the service without interruption. If you close your account, we'll delete your data within a reasonable period afterward, except where we're required to retain certain records for legal, tax, or accounting reasons, or where data has already been anonymized or aggregated.</p>
+      </section>
+
+      <section id="rights">
+        <h2>Your rights &amp; choices</h2>
+        <ul>
+          <li><strong>Export</strong> — every list screen (invoices, purchases, customers, inventory, ledger) supports CSV/Excel export, and every document exports as a PDF, at any time from inside the app.</li>
+          <li><strong>Correct</strong> — you can edit your account details and business records directly in the app.</li>
+          <li><strong>Delete</strong> — contact us at the address below to request deletion of your account and associated data. If you're a team member rather than the Owner, your Owner can remove your access from Settings → Team.</li>
+          <li><strong>Access</strong> — you can ask us for a copy of the personal information we hold about you.</li>
+        </ul>
+        <div class="legal-note"><strong>Note:</strong> depending on where you're located, you may have additional rights under local privacy law (such as the right to lodge a complaint with a data protection authority). We'll honor requests made under applicable law — reach out and we'll sort out what applies.</div>
+      </section>
+
+      <section id="cookies">
+        <h2>Cookies &amp; local storage</h2>
+        <p>The SevenTabs website and app don't run third-party analytics or advertising trackers today. We use your browser's local storage (not cookies) for a few narrow, functional purposes: remembering that a device has already completed the OTP check, and remembering whether you've already seen an on-site promotional popup, so it doesn't show again every visit.</p>
+        <p>We've reserved space for Google AdSense ads on some pages, but it is not active yet — no ad network is currently receiving any data from your visit. If and when it goes live, this policy will be updated first, and AdSense's own cookies/tracking will apply to ad-supported pages at that point.</p>
+      </section>
+
+      <section id="children">
+        <h2>Children's privacy</h2>
+        <p>SevenTabs is a business tool and isn't directed at, or intended for use by, children. We don't knowingly collect information from anyone under 16. If you believe a child has provided us with personal information, contact us and we'll remove it.</p>
+      </section>
+
+      <section id="international">
+        <h2>International use</h2>
+        <p>SevenTabs is used by businesses in multiple countries, and our infrastructure providers may process and store data in locations other than your own. Wherever your data is processed, we require the same standard of protection described in this policy.</p>
+      </section>
+
+      <section id="changes">
+        <h2>Changes to this policy</h2>
+        <p>If we make a material change to how we collect or use your information, we'll update the date at the top of this page and, where appropriate, notify account Owners directly by email. Continuing to use SevenTabs after a change takes effect means you accept the updated policy.</p>
+      </section>
+
+      <section id="contact">
+        <h2>Contact</h2>
+        <p>Questions about this policy, or want to exercise any of the rights above? Reach us at <a href="mailto:support@7tabs.org">support@7tabs.org</a>, or use the customer care button on any page of this site.</p>
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-row">
+      <a class="brand" href="index.html">
+        <img src="assets/logo.png" alt="SevenTabs logo">
+        SevenTabs
+      </a>
+      <div class="foot-links">
+        <a href="features.html">Features</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="help.html">Help</a>
+        <a href="help.html#contact">Contact</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <button id="footAppBtn" type="button" style="background:none;border:0;color:inherit;font:inherit;cursor:pointer;padding:0">Get SevenTabs</button>
+      </div>
+    </div>
+    <div class="foot-copy">© <span id="year"></span> SevenTabs. All rights reserved.</div>
+  </div>
+</footer>
+
+<script type="module" src="assets/site.js?v=37c76261678b"></script>
+<script>
+  // Scroll-spy: highlights the TOC entry for whichever section is
+  // currently in view, so a reader can tell where they are in a long page.
+  const legalToc = document.getElementById('legalToc');
+  const tocLinks = Array.from(legalToc.querySelectorAll('a'));
+  const sections = tocLinks
+    .map((a) => document.querySelector(a.getAttribute('href')))
+    .filter(Boolean);
+  const setActive = (id) => {
+    tocLinks.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === `#${id}`));
+  };
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const visible = entries.filter((e) => e.isIntersecting);
+      if (visible.length) setActive(visible[0].target.id);
+    },
+    { rootMargin: '-96px 0px -70% 0px' }
+  );
+  sections.forEach((s) => observer.observe(s));
+  if (sections[0]) setActive(sections[0].id);
+</script>
+
+</body>
+</html>
