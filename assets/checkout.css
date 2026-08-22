@@ -1,7 +1,7 @@
-/* Page-specific styles for checkout.html — the embedded Stripe Elements
+/* Page-specific styles for checkout.html — the Tap Payments redirect
    upgrade flow, styled after the animated reference the user shared:
-   glassy card visual on the left, real payment form on the right, with
-   processing/success states driven by assets/checkout.js. */
+   glassy card visual on the left, real payment button on the right,
+   with processing/success states driven by assets/checkout.js. */
 
 .checkout-hero{padding:56px 0 80px}
 
@@ -122,9 +122,6 @@
 }
 .checkout-amount-period{font-size:12px;font-weight:600;color:var(--ink-faint);margin-left:2px}
 
-.payment-element{
-  background:var(--bg-soft);border:1px solid var(--panel-border);border-radius:12px;padding:16px;
-}
 .checkout-fineprint{color:var(--ink-faint);font-size:12.5px;margin-top:16px;text-align:center}
 
 .icon-ok{background:linear-gradient(160deg,rgba(156,149,255,.32),rgba(156,149,255,.1));border-color:rgba(156,149,255,.5)}

@@ -19,8 +19,8 @@
 <meta name="twitter:description" content="What SevenTabs collects, why, who it's shared with, and how to access, export or delete your data.">
 <meta name="twitter:image" content="https://7tabs.org/assets/logo.png">
 
-<link rel="stylesheet" href="assets/site.css?v=891227a2fc99">
-<link rel="stylesheet" href="assets/legal.css?v=891227a2fc99">
+<link rel="stylesheet" href="assets/site.css?v=1e7265043647">
+<link rel="stylesheet" href="assets/legal.css?v=1e7265043647">
 </head>
 <body>
 <canvas id="fx" aria-hidden="true"></canvas>
@@ -155,7 +155,7 @@
         <p>To keep your account secure, we use a device-trust model: the first time you sign in on a new device or browser, we send a one-time code (OTP) to confirm it's really you. We keep a record of which devices have completed that check, along with basic session information (sign-in timestamps, general device/browser type), so we don't ask for a code every single time on a device you've already verified.</p>
 
         <h3>Payment information</h3>
-        <p>If you subscribe to a paid plan, payment is processed directly by Stripe. We do not receive or store your full card number — Stripe handles that and gives us only what's needed to manage your subscription (e.g. plan, status, last four digits of a card for your own reference).</p>
+        <p>If you subscribe to a paid plan, payment is processed directly by Tap Payments. We do not receive or store your full card number — Tap handles that and gives us only what's needed to manage your subscription (e.g. plan, status, last four digits of a card for your own reference).</p>
 
         <h3>Support &amp; communications</h3>
         <p>If you contact us — through the in-app/site customer care widget, a support email, or a team-invite response — we keep what you send us so we can reply and so we have a record if the same issue comes up again.</p>
@@ -182,7 +182,7 @@
             <thead><tr><th>Provider</th><th>What it does</th><th>What it sees</th></tr></thead>
             <tbody>
               <tr><td>Supabase</td><td>Database, authentication, file storage</td><td>Your account and business data, encrypted at rest and in transit</td></tr>
-              <tr><td>Stripe</td><td>Payment processing for paid plans</td><td>Billing/payment details — we never see full card numbers</td></tr>
+              <tr><td>Tap Payments</td><td>Payment processing for paid plans</td><td>Billing/payment details — we never see full card numbers</td></tr>
               <tr><td>Resend</td><td>Delivery of OTP codes, invites and scheduled report emails</td><td>The recipient email address and the message content being sent</td></tr>
             </tbody>
           </table>
@@ -265,7 +265,7 @@
   </div>
 </footer>
 
-<script type="module" src="assets/site.js?v=891227a2fc99"></script>
+<script type="module" src="assets/site.js?v=1e7265043647"></script>
 <script>
   // Scroll-spy: highlights the TOC entry for whichever section is
   // currently in view, so a reader can tell where they are in a long page.
