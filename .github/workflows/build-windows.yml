@@ -1,0 +1,65 @@
+name: Build Windows app (free, public-repo runner)
+
+# Runs entirely inside this PUBLIC repo instead of the private
+# Account-software repo — GitHub Actions is unlimited and free on
+# public repos for every runner type (including windows-latest), so
+# this never touches Account-software's Actions spending budget at
+# all, no matter how many times it's run. Account-software's own
+# build-windows.yml is the "real" source of truth for this build and
+# is left untouched; this is a budget-free alternate path that
+# produces the exact same output and publishes to the exact same
+# "latest" release this repo's own download page already links to.
+#
+# Manual trigger only (workflow_dispatch) — deliberately never runs on
+# push/pull_request. This repo is public, so anyone can open a PR
+# against it; if this workflow auto-ran on pull_request and had access
+# to ACCOUNT_SOFTWARE_READ_TOKEN, a malicious fork PR could exfiltrate
+# that token. workflow_dispatch can only be triggered by someone with
+# write access to this repo, so that risk doesn't apply here.
+on:
+  workflow_dispatch:
+    inputs:
+      account_software_ref:
+        description: 'Branch/tag/commit in kirdaarapp/Account-software to build'
+        required: true
+        default: 'claude/ledgr-accounting-app-setup-99r2mt'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      # Checks out the PRIVATE Account-software repo's source using a
+      # fine-grained PAT (Contents: Read-only, scoped to just that repo)
+      # stored as a secret on THIS repo — the default GITHUB_TOKEN for a
+      # workflow run can never reach across into a different repository,
+      # private or not, so a real cross-repo token is required here.
+      - uses: actions/checkout@v4
+        with:
+          repository: kirdaarapp/Account-software
+          ref: ${{ inputs.account_software_ref }}
+          token: ${{ secrets.ACCOUNT_SOFTWARE_READ_TOKEN }}
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.44.6
+          cache: true
+      - run: flutter config --enable-windows-desktop
+      - run: flutter pub get
+      - run: flutter build windows --release
+      - run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath SevenTabs-Windows.zip
+      # Publishes to THIS repo's own "latest" release (not a cross-repo
+      # push like Account-software's workflow needs) — the default
+      # GITHUB_TOKEN already has write access here, no extra secret
+      # needed for this step. Same rolling tag/filename Account-
+      # software's own build-windows.yml uses, so the download page and
+      # site.js need no changes to pick this up.
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Latest build
+          body: Automatically updated. Not a versioned release.
+          make_latest: true
+          files: SevenTabs-Windows.zip
