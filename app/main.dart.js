@@ -55150,7 +55150,7 @@ n=p
 m=A
 l=A
 s=4
-return A.c(o==null?$.dAd=$.a_g().ph(0,"assets/fonts/NotoNaskhArabic-Regular.ttf").bh(0,A.e3s(),t.t1):o,$async$A0)
+return A.c(o==null?$.dAd=$.a_g().ph(0,"assets/fonts/NotoSansArabic-Regular.ttf").bh(0,A.e3s(),t.t1):o,$async$A0)
 case 4:q=n.aYz(m.cX(null,null,null,null,null,null,null,null,null,l.a([c],t.ZQ),null,null,null,null,null,null,!0,null,null,null,null))
 s=1
 break
