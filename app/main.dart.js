@@ -228530,14 +228530,14 @@ q=s?d:a2.b
 q=q!=null&&new A.dw(q).bE(0,A.e6())?B.cW:d
 p=e.d
 o=s?d:a2.b
-r=A.a([A.bW(r,d,d,A.cX(d,p,d,d,d,d,d,d,d,B.aE,d,d,20,d,B.bg,d,!0,o!=null&&new A.dw(o).bE(0,A.e6())?-1.2:0.5,d,d,d),d,q)],a0)
+r=A.a([A.bW(r,d,d,A.cX(d,p,d,d,d,d,d,d,d,B.aE,d,d,20,d,B.bg,d,!0,o!=null&&new A.dw(o).bE(0,A.e6())?d:0.5,d,d,d),d,q)],a0)
 q=s?d:a2.ay
 if((q==null?"":q).length!==0){q=a2.ay
 o=q.toUpperCase()
 n=new A.dw(q).bE(0,A.e6())
 n=n?B.cW:d
 q=new A.dw(q).bE(0,A.e6())
-q=q?-0.54:2
+q=q?d:2
 r.push(A.bW(o,d,d,A.cX(d,e.e,d,d,d,d,d,d,d,B.aE,d,d,9,d,B.bg,d,!0,q,d,d,d),d,n))}a1.push(A.fv(r,B.li))
 a1=A.k7(a1,B.dq,B.eL)
 r=A.fb(d,d,p,d,d,2.5,d,d,1/0)
@@ -236443,8 +236443,7 @@ p=c.b
 o=p?14:36
 n=c.d
 m=s?b:a1.b
-l=p?14:36
-r=A.a([A.bW(r,b,b,A.cX(b,n,b,b,b,b,b,b,b,B.aE,b,b,o,b,B.bg,b,!0,m!=null&&new A.dw(m).bE(0,A.e6())?-0.06*l:1,b,b,b),B.ej,q)],a)
+r=A.a([A.bW(r,b,b,A.cX(b,n,b,b,b,b,b,b,b,B.aE,b,b,o,b,B.bg,b,!0,m!=null&&new A.dw(m).bE(0,A.e6())?b:1,b,b,b),B.ej,q)],a)
 q=s?b:a1.ay
 if((q==null?"":q).length!==0){q=a1.ay
 o=q.toUpperCase()
@@ -236452,9 +236451,8 @@ m=new A.dw(q).bE(0,A.e6())
 m=m?B.cW:b
 l=p?6:11
 k=p?1:3
-j=p?6:11
 q=new A.dw(q).bE(0,A.e6())
-q=q?-0.06*j:k
+q=q?b:k
 r.push(A.bW(o,b,b,A.cX(b,c.e,b,b,b,b,b,b,b,B.aE,b,b,l,b,B.bg,b,!0,q,b,b,b),B.ej,m))}a0.push(A.fv(r,B.li))
 a0=A.a([A.k7(a0,B.dq,B.eL)],a)
 r=!p
@@ -236492,9 +236490,9 @@ k=o==null
 if((k?"":o).length!==0){k=!k&&new A.dw(o).bE(0,A.e6())?B.cW:b
 l.push(A.bW("Attn: "+A.o(o),b,b,B.fJ,b,k))}o=c.ay
 if((o==null?"":o).length!==0){o.toString
-l.push(A.bW(o,b,b,B.fJ,b,b))}for(o=c.ch,k=o.length,i=0;i<o.length;o.length===k||(0,A.J)(o),++i){h=o[i]
-j=new A.dw(h).bE(0,A.e6())
-l.push(A.bW(h,b,b,B.fJ,b,j?B.cW:b))}a0.push(A.fb(b,A.fv(A.a([q,new A.i8(B.pU,A.fv(l,B.bX))],a),B.bX),b,b,m,b,b,b,1/0))}a0.push(new A.d4(b,p?8:16,b))
+l.push(A.bW(o,b,b,B.fJ,b,b))}for(o=c.ch,k=o.length,j=0;j<o.length;o.length===k||(0,A.J)(o),++j){i=o[j]
+h=new A.dw(i).bE(0,A.e6())
+l.push(A.bW(i,b,b,B.fJ,b,h?B.cW:b))}a0.push(A.fb(b,A.fv(A.a([q,new A.i8(B.pU,A.fv(l,B.bX))],a),B.bX),b,b,m,b,b,b,1/0))}a0.push(new A.d4(b,p?8:16,b))
 q=c.CW
 o=c.e
 if(p)a0.push(A.e09(q,o))
@@ -236510,21 +236508,21 @@ l.push(A.bW("Discount: -"+k,b,b,A.cX(b,b,b,b,b,b,b,b,b,B.aE,b,b,p?8:10,b,b,b,!0,
 if(k>0){k=q.G(k)
 l.push(A.bW("Tax: "+k,b,b,A.cX(b,b,b,b,b,b,b,b,b,B.aE,b,b,p?8:10,b,b,b,!0,b,b,b,b),b,b))}k=c.dx
 if((k==null?"":k).length!==0){k.toString
-j=new A.dw(k).bE(0,A.e6())
-j=j?B.cW:b
-l.push(A.bW(k,b,b,A.cX(b,b,b,b,b,b,b,b,b,B.aE,b,b,p?7:9,B.hj,b,b,!0,b,b,b,b),b,j))}k=c.dy
-j=c.fr
-g=q.G(j)
+h=new A.dw(k).bE(0,A.e6())
+h=h?B.cW:b
+l.push(A.bW(k,b,b,A.cX(b,b,b,b,b,b,b,b,b,B.aE,b,b,p?7:9,B.hj,b,b,!0,b,b,b,b),b,h))}k=c.dy
+h=c.fr
+g=q.G(h)
 l.push(A.bW("TOTAL ("+k+"): "+g,b,b,A.cX(b,b,b,b,b,b,b,b,b,B.aE,b,b,p?10:14,b,B.bg,b,!0,b,b,b,b),b,b))
 g=c.fx
 if(g!=null){f=p?2:4
 e=q.G(g)
 f=A.a([new A.d4(b,f,b),A.bW(c.fy+": "+e,b,b,A.cX(b,n,b,b,b,b,b,b,b,B.aE,b,b,p?8:10,b,B.bg,b,!0,b,b,b,b),b,b)],a)
-g=j-g
+g=h-g
 if(g>0.01){g=q.G(g)
 f.push(A.bW("Balance due: "+g,b,b,A.cX(b,b,b,b,b,b,b,b,b,B.aE,b,b,p?9:12,b,B.bg,b,!0,b,b,b,b),b,b))}B.h.S(l,f)}g=c.go
 if(g!==k&&c.id!==1){k=c.id
-q=q.G(j/k)
+q=q.G(h/k)
 l.push(A.bW(g+" "+q+" @ "+A.o(k),b,b,A.cX(b,b,b,b,b,b,b,b,b,B.aE,b,b,p?7:9,b,b,b,!0,b,b,b,b),b,b))}a0.push(new A.rG(B.fp,b,b,A.fv(l,B.li)))
 q=c.k1
 if(J.eF(q)){l=p?6:10
@@ -236532,13 +236530,13 @@ B.h.S(a0,A.a([new A.d4(b,l,b),new A.rG(B.fp,b,b,A.dYS(q,p))],a))}if(r&&c.k2.leng
 l=A.fb(b,A.bW("LANDED COST",b,b,A.cX(b,B.fe,b,b,b,b,b,b,b,B.aE,b,b,10,b,B.bg,b,!0,1.5,b,b,b),b,b),n,b,b,b,b,B.mP,1/0)
 k=s?b:a1.id
 k=A.a([A.dmi("Goods ("+(k==null?"USD":k)+")",m,!1)],a)
-for(g=c.k2,f=g.length,i=0;i<g.length;g.length===f||(0,A.J)(g),++i){e=g[i]
+for(g=c.k2,f=g.length,j=0;j<g.length;g.length===f||(0,A.J)(g),++j){e=g[j]
 k.push(A.dmi(e.a,e.b,!1))}k.push(new A.i8(B.avp,A.fb(b,b,o,b,b,0.75,b,b,b)))
 k.push(A.dmi("Total landed cost",m+B.h.aV(g,0,new A.d7x()),!0))
 m=c.k3
 if(m!=null)B.h.S(k,A.a([new A.d4(b,4,b),A.bW("Average cost per "+c.k4+": "+$.Qc().G(m),b,b,A.cX(b,n,b,b,b,b,b,b,b,B.aE,b,b,9,b,B.bg,b,!0,b,b,b,b),b,b)],a))
 B.h.S(a0,A.a([new A.d4(b,14,b),A.fb(b,A.fv(A.a([l,new A.i8(B.pU,A.fv(k,B.bX))],a),B.bX),b,b,q,b,b,b,1/0)],a))}if(r&&c.ok){q=A.l4(A.vQ(o),b,b)
-B.h.S(a0,A.a([new A.d4(b,14,b),A.fb(b,A.dkb(b,B.oj,b,new A.mb(b,A.a([new A.mb("Amount in Words: ",b,A.cX(b,b,b,b,b,b,b,b,b,B.aE,b,b,9,b,B.bg,b,!0,b,b,b,b),0,b),new A.mb(A.dms(j,""),b,B.ij,0,b)],t.XW),b,0,b),b,b,1,!1),b,b,q,b,b,B.BT,1/0)],a))}if(r&&c.p1){q=A.l4(A.vQ(o),b,b)
+B.h.S(a0,A.a([new A.d4(b,14,b),A.fb(b,A.dkb(b,B.oj,b,new A.mb(b,A.a([new A.mb("Amount in Words: ",b,A.cX(b,b,b,b,b,b,b,b,b,B.aE,b,b,9,b,B.bg,b,!0,b,b,b,b),0,b),new A.mb(A.dms(h,""),b,B.ij,0,b)],t.XW),b,0,b),b,b,1,!1),b,b,q,b,b,B.BT,1/0)],a))}if(r&&c.p1){q=A.l4(A.vQ(o),b,b)
 o=A.fb(b,A.bW("BANK DETAILS",b,b,A.cX(b,B.fe,b,b,b,b,b,b,b,B.aE,b,b,10,b,B.bg,b,!0,1.5,b,b,b),b,b),n,b,b,b,b,B.mP,1/0)
 m=A.a([],a)
 l=s?b:a1.cy
@@ -236573,7 +236571,7 @@ a0.push(A.fb(b,b,n,b,b,p?0.5:1,b,b,1/0))
 a1=c.p3
 if(a1.length!==0){s=p?4:8
 if(p){r=A.a([],a)
-for(q=a1.length,i=0;i<a1.length;a1.length===q||(0,A.J)(a1),++i)r.push(A.bW(a1[i],b,b,B.GS,b,b))
+for(q=a1.length,j=0;j<a1.length;a1.length===q||(0,A.J)(a1),++j)r.push(A.bW(a1[j],b,b,B.GS,b,b))
 a1=A.fv(r,B.dq)}else{r=A.a([],a)
 for(d=0;q=a1.length,d<q;++d){p=a1[d]
 if(d===0)q=B.ii
@@ -236674,7 +236672,7 @@ q=s?d:a.b
 q=q!=null&&new A.dw(q).bE(0,A.e6())?B.cW:d
 p=e.c
 o=s?d:a.b
-r=A.a([A.bW(r,d,d,A.cX(d,p,d,d,d,d,d,d,d,B.aE,d,d,26,d,B.bg,d,!0,o!=null&&new A.dw(o).bE(0,A.e6())?-1.56:1,d,d,d),B.ej,q)],c)
+r=A.a([A.bW(r,d,d,A.cX(d,p,d,d,d,d,d,d,d,B.aE,d,d,26,d,B.bg,d,!0,o!=null&&new A.dw(o).bE(0,A.e6())?d:1,d,d,d),B.ej,q)],c)
 s=s?d:a.ay
 if((s==null?"":s).length!==0){s=a.ay
 q=s.toUpperCase()
@@ -236683,7 +236681,7 @@ o=o?B.cW:d
 a=a.ch
 a=A.wI(a==null?"#B8860B":a)
 s=new A.dw(s).bE(0,A.e6())
-r.push(A.bW(q,d,d,A.cX(d,a,d,d,d,d,d,d,d,B.aE,d,d,9,d,B.bg,d,!0,s?-0.54:2,d,d,d),B.ej,o))}b.push(A.fv(r,B.li))
+r.push(A.bW(q,d,d,A.cX(d,a,d,d,d,d,d,d,d,B.aE,d,d,9,d,B.bg,d,!0,s?d:2,d,d,d),B.ej,o))}b.push(A.fv(r,B.li))
 b=A.k7(b,B.dq,B.eL)
 a=A.fb(d,d,p,d,d,3,d,d,1/0)
 s=A.QR(A.bW("PAYSLIP",d,d,A.cX(d,p,d,d,d,d,d,d,d,B.aE,d,d,18,d,d,d,!0,4,d,d,d),d,d))
@@ -236806,7 +236804,7 @@ q=r.toUpperCase()
 p=new A.dw(r).bE(0,A.e6())
 p=p?B.cW:j
 r=new A.dw(r).bE(0,A.e6())
-r=r?-0.54:2
+r=r?j:2
 o.push(A.bW(q,j,j,A.cX(j,k.d,j,j,j,j,j,j,j,B.aE,j,j,9,j,B.bg,j,!0,r,j,j,j),j,p))}for(r=k.e,q=r.length,m=0;m<r.length;r.length===q||(0,A.J)(r),++m)o.push(A.bW(r[m],j,j,B.ij,j,j))
 s.push(A.fv(o,B.bX))
 s=A.k7(s,B.dq,B.fE)
