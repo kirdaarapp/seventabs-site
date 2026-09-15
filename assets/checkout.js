@@ -30,14 +30,17 @@ const supabase = createClient(
 
 const PENDING_TAP_ID_KEY = 'seventabs_pending_tap_id';
 
-// Monthly/yearly plan choice — defaults from pricing.html's own toggle
-// via ?plan=yearly (see assets/pricing.css's "Upgrade now" link), but
-// stays changeable here too via the toggle below.
-let selectedPlan = new URLSearchParams(location.search).get('plan') === 'yearly'
-  ? 'yearly'
-  : 'monthly';
-const PLAN_AMOUNTS = { monthly: '$19.00', yearly: '$199.00' };
-const PLAN_PERIODS = { monthly: '/mo', yearly: '/yr' };
+// Monthly/yearly/lifetime plan choice — defaults from pricing.html's
+// own toggle via ?plan=yearly (see assets/pricing.css's "Upgrade now"
+// link), but stays changeable here too via the toggle below.
+// "lifetime" is a one-time charge (see create-checkout-session's
+// PLAN_AMOUNTS) after which the company never pays again — verify-tap-
+// payment leaves current_period_end null for it, which isPaidActive()
+// below already treats as active forever.
+const urlPlan = new URLSearchParams(location.search).get('plan');
+let selectedPlan = urlPlan === 'yearly' || urlPlan === 'lifetime' ? urlPlan : 'monthly';
+const PLAN_AMOUNTS = { monthly: '$19.00', yearly: '$199.00', lifetime: '$699.00' };
+const PLAN_PERIODS = { monthly: '/mo', yearly: '/yr', lifetime: ' once' };
 
 function updateAmountUI() {
   const amountValue = document.getElementById('checkoutAmountValue');
