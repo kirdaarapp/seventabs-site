@@ -241295,7 +241295,8 @@ r.push(B.aP)
 q=f.w
 if((q==null?e:q.gum())===!0){q=f.w
 q=(q==null?e:q.d==="lifetime")===!0}else q=!1
-if(!q){q=A.a([],s)
+q=!q
+if(q){q=A.a([],s)
 p=f.w
 p=p==null?e:p.gum()
 if(p===!0){p=A.u(a).ok.x
