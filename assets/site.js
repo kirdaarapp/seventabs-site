@@ -3,7 +3,38 @@
 // (see index.html's #signInOverlay) plus whichever of these optional
 // trigger buttons it has: #navAppBtn (every page has this one),
 // #heroAppBtn, #ctaAppBtn, #footAppBtn.
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+//
+// The Supabase client is loaded lazily (see getSupabase() below), not as
+// a top-level static import. A static `import ... from 'https://cdn...'`
+// used to sit here — but a static import failing for ANY reason (a flaky
+// mobile connection, an ad-blocker or privacy browser blocking CDN
+// scripts, a regional block, a transient jsDelivr outage) throws before
+// this module's body runs at all, taking down everything below it: the
+// scroll-reveal that makes feature cards/pricing/FAQ/download sections
+// visible, the particle background, the customer-care widget — not just
+// sign-in. Confirmed directly (this exact failure mode, reproduced by
+// blocking the CDN request) as the real cause behind "the site doesn't
+// show properly on mobile," where a CDN hiccup is far more likely than
+// on a desktop's wired connection. Deferring the import to only when
+// something actually needs Supabase means a CDN failure now degrades to
+// "sign-in doesn't work" instead of "half the page is permanently blank."
+const SUPABASE_URL = 'https://kamjtddqgofuasublpwc.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_25vQKsEQqDUEjEkuglU1Rg_GzEW9S3a';
+let _supabaseClientPromise = null;
+function getSupabase() {
+  if (!_supabaseClientPromise) {
+    _supabaseClientPromise = import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm')
+      .then(({ createClient }) => createClient(SUPABASE_URL, SUPABASE_ANON_KEY))
+      .catch((err) => {
+        // Don't cache a failed load forever — a transient network blip
+        // shouldn't permanently break sign-in for the rest of the visit;
+        // the next call (e.g. the visitor retries) gets a fresh attempt.
+        _supabaseClientPromise = null;
+        throw err;
+      });
+  }
+  return _supabaseClientPromise;
+}
 
 const yearEl = document.getElementById('year');
 if (yearEl) yearEl.textContent = new Date().getFullYear();
@@ -145,12 +176,8 @@ if (revealTargets.length && 'IntersectionObserver' in window) {
 // server-side. Signing in here writes the session to localStorage under
 // the same 'sb-<project-ref>-auth-token' key supabase_flutter reads on
 // web, so /app/ picks up this exact session on load — a real sign-in,
-// not a redirect-and-hope.
-const SUPABASE_URL = 'https://kamjtddqgofuasublpwc.supabase.co';
-const supabase = createClient(
-  SUPABASE_URL,
-  'sb_publishable_25vQKsEQqDUEjEkuglU1Rg_GzEW9S3a'
-);
+// not a redirect-and-hope. (SUPABASE_URL/getSupabase() are defined at the
+// top of this file, ahead of the code below that doesn't need them.)
 
 // Honest, real "businesses on SevenTabs" count — see
 // supabase/functions/public-stats. Not a fabricated "N people online"
@@ -500,7 +527,8 @@ if (overlay) {
     otpVerifyBtn.disabled = false;
     otpVerifyBtn.textContent = 'Verify & continue';
     try {
-      const { error } = await supabase.auth.signInWithOtp({ email, shouldCreateUser: false });
+      const client = await getSupabase();
+      const { error } = await client.auth.signInWithOtp({ email, shouldCreateUser: false });
       if (error) throw error;
       startOtpCooldown();
     } catch (e) {
@@ -520,7 +548,8 @@ if (overlay) {
     otpVerifyBtn.disabled = true;
     otpVerifyBtn.textContent = 'Verifying…';
     try {
-      const { error } = await supabase.auth.verifyOtp({
+      const client = await getSupabase();
+      const { error } = await client.auth.verifyOtp({
         email: pendingEmail,
         token: code,
         type: 'email',
@@ -582,7 +611,15 @@ if (overlay) {
   if (otpBackBtn) {
     otpBackBtn.addEventListener('click', async () => {
       stopOtpCooldown();
-      await supabase.auth.signOut();
+      // Best-effort — the visitor just wants to go back to the sign-in
+      // form either way, even if Supabase never loaded in the first
+      // place (in which case there's no session to sign out of anyway).
+      try {
+        const client = await getSupabase();
+        await client.auth.signOut();
+      } catch {
+        // ignore
+      }
       resetModal();
       document.getElementById('siEmail').focus();
     });
@@ -595,7 +632,17 @@ if (overlay) {
     submitBtn.textContent = 'Signing in…';
     const email = document.getElementById('siEmail').value.trim();
     const password = document.getElementById('siPassword').value;
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    let client;
+    try {
+      client = await getSupabase();
+    } catch {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign in';
+      errorBox.textContent = "Couldn't connect — check your internet connection and try again.";
+      errorBox.classList.add('show');
+      return;
+    }
+    const { error } = await client.auth.signInWithPassword({ email, password });
     submitBtn.disabled = false;
     submitBtn.textContent = 'Sign in';
     if (error) {
@@ -665,7 +712,8 @@ if (overlay) {
       signUpSubmit.textContent = 'Creating account…';
 
       try {
-        const { data, error } = await supabase.auth.signUp({
+        const client = await getSupabase();
+        const { data, error } = await client.auth.signUp({
           email,
           password,
           options: { data: { full_name: yourName, phone } },
@@ -685,14 +733,14 @@ if (overlay) {
         // auto-fills from the JWT email with the name actually typed
         // in. Phone isn't a company_members column (yet), so it's kept
         // on the auth user's own metadata instead, set above.
-        const { data: companyRow, error: companyError } = await supabase
+        const { data: companyRow, error: companyError } = await client
           .from('companies')
           .insert({ name: businessName })
           .select()
           .single();
         if (companyError) throw companyError;
 
-        const { error: memberError } = await supabase
+        const { error: memberError } = await client
           .from('company_members')
           .update({ display_name: yourName })
           .eq('company_id', companyRow.id)
@@ -713,7 +761,12 @@ if (overlay) {
 
   // If already signed in on this device, every entry point should say
   // so instead of a generic "sign in" prompt — small but real touch.
-  supabase.auth.getSession().then(({ data }) => {
+  // Failure (e.g. the CDN import never resolves) falls through to the
+  // same "not signed in" branch below — a visitor who can't reach
+  // Supabase at all is in no worse a position than one who's simply
+  // never signed in, and the rest of the page must stay usable either
+  // way.
+  getSupabase().then((client) => client.auth.getSession()).catch(() => ({ data: { session: null } })).then(({ data }) => {
     if (data.session) {
       hasSession = true;
       if (navAppBtn) navAppBtn.textContent = 'Get SevenTabs →';
@@ -853,7 +906,7 @@ if (overlay) {
 // card on the page — a mouse-follow tilt on many elements at once reads
 // as noisy rather than as a deliberate depth cue. Off under
 // prefers-reduced-motion (the resting CSS tilt still applies from
-// home.css/checkout.css; only the pointer-follow motion is skipped),
+// home.css; only the pointer-follow motion is skipped),
 // and paused the instant the pointer leaves so it always settles back
 // to the resting tilt rather than getting stuck mid-tween.
 function initTilt(wrapId, tiltId, restY, rangeX, rangeY) {
@@ -878,6 +931,3 @@ function initTilt(wrapId, tiltId, restY, rangeX, rangeY) {
 // index.html hero mockup — #preview3d/#previewTilt aren't on any other
 // page, so this call is a no-op everywhere else.
 initTilt('preview3d', 'previewTilt', 9, 12, 7);
-// checkout.html payment card — #payCard3d/#payCard aren't on any other
-// page. Smaller swing than the hero since the card itself is smaller.
-initTilt('payCard3d', 'payCard', 5, 9, 5);

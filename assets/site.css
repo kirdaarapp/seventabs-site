@@ -186,9 +186,9 @@ nav.wrap{display:flex;align-items:center;justify-content:space-between;padding-t
 .btn-ghost{background:rgba(255,255,255,.04);color:var(--ink);border-color:rgba(255,255,255,.14)}
 .btn-ghost:hover{background:rgba(255,255,255,.09);transform:translateY(-2px)}
 
-/* Monthly/yearly billing-period toggle — shared here (not a page CSS
-   file) since it's used on both pricing.html and checkout.html. Same
-   pill-button language as .cat-nav/.related-chip elsewhere. */
+/* Monthly/yearly billing-period toggle (pricing.html's Pro card). Kept
+   here rather than pricing.css since it's the same generic pill-button
+   language as .cat-nav/.related-chip elsewhere in this shared file. */
 .billing-toggle{
   display:flex;justify-content:center;gap:4px;margin:0 0 24px;
   background:var(--panel);border:1px solid var(--panel-border);

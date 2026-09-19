@@ -19,9 +19,9 @@
 <meta name="twitter:description" content="Free to start. $19/mo Pro with a 30-day free trial, no card required. Custom pricing for larger teams.">
 <meta name="twitter:image" content="https://7tabs.org/assets/logo.png">
 
-<link rel="stylesheet" href="assets/site.css?v=563a4766c772">
-<link rel="stylesheet" href="assets/home.css?v=563a4766c772">
-<link rel="stylesheet" href="assets/pricing.css?v=563a4766c772">
+<link rel="stylesheet" href="assets/site.css?v=76dd97b7fb8e">
+<link rel="stylesheet" href="assets/home.css?v=76dd97b7fb8e">
+<link rel="stylesheet" href="assets/pricing.css?v=76dd97b7fb8e">
 </head>
 <body>
 <canvas id="fx" aria-hidden="true"></canvas>
@@ -167,7 +167,7 @@
           </ul>
           <button class="btn btn-primary" type="button" id="proBtn">Start free trial</button>
           <div class="guarantee"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> 30-day trial, no card required</div>
-          <p class="modal-sub" style="text-align:center;margin:10px 0 0;font-size:13px"><a href="checkout.html" id="upgradeLink">Already trialing? Upgrade now →</a></p>
+          <p class="modal-sub" style="text-align:center;margin:10px 0 0;font-size:13px"><a href="#" id="upgradeLink">Already trialing? Upgrade now →</a></p>
         </div>
 
         <div class="plan" data-animate>
@@ -222,26 +222,34 @@
   </div>
 </footer>
 
-<script type="module" src="assets/site.js?v=563a4766c772"></script>
+<script type="module" src="assets/site.js?v=76dd97b7fb8e"></script>
 <script>
   document.getElementById('starterBtn').addEventListener('click', () => document.getElementById('navAppBtn').click());
   document.getElementById('proBtn').addEventListener('click', () => document.getElementById('navAppBtn').click());
 
-  // Monthly/yearly toggle for the Pro card — purely a display + link
-  // change here (creating the trial and picking Monthly vs Yearly to
-  // actually PAY are two different steps: this page's "Start free
-  // trial" always just opens sign-in, same as before; the period
-  // choice only matters once someone is upgrading, which is why it's
-  // threaded through to checkout.html via ?plan=).
+  // "Already trialing? Upgrade now" — same shared sign-in entry point as
+  // every other CTA on this site (see marketing/assets/site.js and
+  // CLAUDE.md's note on this pattern), not a separate checkout page.
+  // Upgrading a trial to a paid plan happens inside the app itself
+  // (Settings → Billing), which already has its own plan picker and
+  // bank-transfer submission flow — nothing about which period someone
+  // eventually picks needs to be threaded through sign-in.
+  document.getElementById('upgradeLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('navAppBtn').click();
+  });
+
+  // Monthly/yearly toggle for the Pro card — purely a display change:
+  // this page's "Start free trial" always just opens sign-in regardless
+  // of which period is highlighted, since the real plan choice happens
+  // later, inside the app's own Billing screen.
   const proPrice = document.getElementById('proPrice');
-  const upgradeLink = document.getElementById('upgradeLink');
   document.querySelectorAll('#billingToggle .billing-toggle-opt').forEach((btn) => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('#billingToggle .billing-toggle-opt').forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
       const yearly = btn.dataset.period === 'yearly';
       proPrice.innerHTML = yearly ? '$199<span>/yr</span>' : '$19<span>/mo</span>';
-      upgradeLink.href = yearly ? 'checkout.html?plan=yearly' : 'checkout.html';
     });
   });
 </script>
