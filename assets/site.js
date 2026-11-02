@@ -169,14 +169,23 @@ if (counter) {
     .then((r) => (r.ok ? r.json() : null))
     .then((d) => {
       if (!d || typeof d.visitsMonth !== 'number') return;
-      counter.querySelector('[data-stat="visits"]').textContent = nf.format(d.visitsMonth);
-      counter.querySelector('[data-stat="downloads"]').textContent = nf.format(d.downloads);
+      const first = counter.hidden;
+      const set = (k, v) => {
+        const el = counter.querySelector(`[data-stat="${k}"]`);
+        if (first && typeof countUp === 'function') countUp(el, v); else el.textContent = nf.format(v);
+      };
+      set('visits', d.visitsMonth);
+      set('downloads', d.downloads);
       counter.querySelector('[data-stat="now"]').textContent = nf.format(Math.max(1, d.liveNow));
       counter.hidden = false;
     })
     .catch(() => {});
   load();
   setInterval(() => { if (document.visibilityState === 'visible') load(); }, 60000);
+}
+
+function reduceMotionNow() {
+  try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) { return true; }
 }
 
 // ---- Reviews ----
@@ -207,6 +216,7 @@ if (rList) {
         return;
       }
       rList.innerHTML = d.reviews.map(reviewCard).join('');
+      if (typeof revealNew === 'function') revealNew(rList.children);
       const score = document.getElementById('reviewScore');
       if (score && d.count > 0) {
         score.querySelector('b').textContent = Number(d.average).toFixed(1);
@@ -223,13 +233,86 @@ if (rList) {
 
 const rForm = document.getElementById('reviewForm');
 if (rForm) {
-  let stars = 5;
+  let stars = 0;
   const pick = rForm.querySelectorAll('.a-pick button');
-  const paint = () => pick.forEach((b, i) => {
-    b.classList.toggle('on', i < stars);
+  const textBox = rForm.querySelector('#rText');
+  // A friendly answer for every rating. Honest on purpose: unhappy
+  // customers are thanked and asked what to fix, never pushed to change
+  // their stars (that would make the reviews untrustworthy).
+  const MOODS = {
+    1: ['😔', 'We are really sorry.', 'Please tell us what went wrong — we will make it right.', 'What went wrong? What should we fix first?'],
+    2: ['😕', 'Sorry it is not good enough yet.', 'Tell us what is missing and our team will work on it.', 'What is missing or not working for you?'],
+    3: ['🙂', 'Thank you — we can do better.', 'What one thing would make SevenTabs great for you?', 'What should be better?'],
+    4: ['😊', 'Great, thank you!', 'Anything small that would make it perfect?', 'What do you like? Anything we should improve?'],
+    5: ['🤩', 'Wow — thank you so much!', 'You made our team’s day. Tell others what you love.', 'What do you love about SevenTabs?'],
+  };
+  let mood = rForm.querySelector('.a-mood');
+  if (!mood) {
+    mood = document.createElement('div');
+    mood.className = 'a-mood';
+    mood.setAttribute('aria-live', 'polite');
+    mood.hidden = true;
+    rForm.querySelector('.a-pick').after(mood);
+  }
+  const paint = (hover) => pick.forEach((b, i) => {
+    const n = hover || stars;
+    b.classList.toggle('on', i < n);
     b.setAttribute('aria-pressed', String(i < stars));
   });
-  pick.forEach((b, i) => b.addEventListener('click', () => { stars = i + 1; paint(); }));
+  const burst = () => {
+    if (reduceMotionNow()) return;
+    const host = rForm.querySelector('.a-pick');
+    for (let k = 0; k < 18; k++) {
+      const sp = document.createElement('span');
+      sp.className = 'a-spark';
+      sp.textContent = k % 3 === 0 ? '★' : '';
+      const a = (Math.PI * 2 * k) / 18 + Math.random() * 0.3;
+      const r = 60 + Math.random() * 70;
+      sp.style.setProperty('--x', `${Math.cos(a) * r}px`);
+      sp.style.setProperty('--y', `${Math.sin(a) * r - 20}px`);
+      sp.style.setProperty('--c', ['#f59e0b', '#5b4ff5', '#db2777', '#16a34a'][k % 4]);
+      sp.style.left = `${110 + Math.random() * 40}px`;
+      host.appendChild(sp);
+      setTimeout(() => sp.remove(), 1100);
+    }
+  };
+  const choose = (n) => {
+    stars = n;
+    paint();
+    pick.forEach((b, i) => {
+      b.classList.remove('pop');
+      if (i < n && !reduceMotionNow()) {
+        void b.offsetWidth;
+        b.style.setProperty('--pd', `${i * 0.06}s`);
+        b.classList.add('pop');
+      }
+    });
+    const [emoji, head, line, hint] = MOODS[n];
+    mood.className = `a-mood m${n}`;
+    mood.innerHTML = `<span class="a-mood-e">${emoji}</span><div><b>${head}</b><span>${line}</span>`
+      + (n <= 3 ? `<a href="#suggest" class="a-mood-link">Suggest an improvement ›</a>` : '') + '</div>';
+    mood.hidden = false;
+    if (!reduceMotionNow()) { mood.classList.remove('show'); void mood.offsetWidth; mood.classList.add('show'); }
+    textBox.placeholder = hint;
+    rForm.classList.toggle('happy', n === 5);
+    if (n === 5) burst();
+  };
+  pick.forEach((b, i) => {
+    b.addEventListener('click', () => choose(i + 1));
+    b.addEventListener('mouseenter', () => paint(i + 1));
+    b.addEventListener('mouseleave', () => paint());
+  });
+  // "Suggest an improvement" → the Ideas side (also switches the phone tab).
+  rForm.addEventListener('click', (e) => {
+    const a = e.target.closest('.a-mood-link');
+    if (!a) return;
+    const ideas = document.getElementById('ideaForm');
+    if (!ideas) { location.href = 'reviews.html#suggest'; e.preventDefault(); return; }
+    e.preventDefault();
+    if (location.hash === '#suggest') window.dispatchEvent(new HashChangeEvent('hashchange'));
+    else location.hash = '#suggest';
+    setTimeout(() => ideas.querySelector('#iTitle')?.focus({ preventScroll: true }), 700);
+  });
   paint();
   const msg = document.getElementById('reviewMsg');
   const send = document.getElementById('reviewSend');
@@ -238,6 +321,12 @@ if (rForm) {
     const name = rForm.querySelector('#rName').value.trim();
     const text = rForm.querySelector('#rText').value.trim();
     msg.hidden = true;
+    if (!stars) {
+      msg.className = 'a-msg err';
+      msg.textContent = 'Please tap the stars to choose your rating.';
+      msg.hidden = false;
+      return;
+    }
     if (!name || text.length < 10) {
       msg.className = 'a-msg err';
       msg.textContent = 'Please write your name and a few words (at least 10 letters).';
@@ -261,7 +350,8 @@ if (rForm) {
       msg.textContent = 'Thank you! Your review will show here after a quick check.';
       msg.hidden = false;
       rForm.reset();
-      stars = 5; paint();
+      stars = 0; paint(); mood.hidden = true; rForm.classList.remove('happy');
+      textBox.placeholder = 'What do you like? What should be better?';
     } catch (_) {
       msg.className = 'a-msg err';
       msg.textContent = "That didn't go through. Please try again in a moment.";
@@ -271,6 +361,181 @@ if (rForm) {
       send.textContent = 'Send review';
     }
   });
+}
+
+// ---- Ideas (feature suggestions) ----
+const VOTED_KEY = 'st_voted_ideas';
+function votedSet() {
+  try { return new Set(JSON.parse(localStorage.getItem(VOTED_KEY) || '[]')); } catch (_) { return new Set(); }
+}
+function saveVoted(set) {
+  try { localStorage.setItem(VOTED_KEY, JSON.stringify([...set].slice(-300))); } catch (_) { /* ignore */ }
+}
+const UP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5l7 8h-4.5v6h-5v-6H5z"/></svg>';
+function ideaCard(r, voted) {
+  const badge = r.status === 'added'
+    ? '<span class="a-badge added">✓ Added in the app</span>'
+    : r.status === 'planned' ? '<span class="a-badge planned">Planned</span>' : '';
+  const when = r.status === 'added' && r.added_at ? r.added_at : r.created_at;
+  const date = when ? new Date(when).toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+  const meta = [r.name ? esc(r.name) : '', r.status === 'added' ? `added ${date}` : date].filter(Boolean).join(' · ');
+  const on = voted.has(r.id);
+  return `<div class="a-idea${r.status === 'added' ? ' added' : ''}">`
+    + `<button type="button" class="a-vote${on ? ' on' : ''}" data-id="${esc(r.id)}" aria-pressed="${on}" aria-label="${on ? 'You voted for this' : 'Vote for this idea'}">${UP}<b>${nf.format(r.votes || 0)}</b></button>`
+    + `<div><h4>${esc(r.title)}${badge}</h4>${r.details ? `<p>${esc(r.details)}</p>` : ''}<div class="a-meta">${meta}</div></div></div>`;
+}
+const iList = document.getElementById('ideaList');
+if (iList) {
+  const limit = Number(iList.getAttribute('data-limit') || 4);
+  fetch(`${SITE_API}?action=suggestions`, { headers: { apikey: SUPABASE_ANON_KEY } })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((d) => {
+      const list = d && Array.isArray(d.suggestions) ? d.suggestions.slice(0, limit) : [];
+      if (!list.length) { document.getElementById('ideaEmpty').hidden = false; return; }
+      const voted = votedSet();
+      iList.innerHTML = list.map((r) => ideaCard(r, voted)).join('');
+      revealNew(iList.children);
+    })
+    .catch(() => { document.getElementById('ideaEmpty').hidden = false; });
+  iList.addEventListener('click', (e) => {
+    const btn = e.target.closest('.a-vote');
+    if (!btn || btn.classList.contains('on')) return;
+    const id = btn.getAttribute('data-id');
+    const voted = votedSet();
+    if (voted.has(id)) return;
+    const b = btn.querySelector('b');
+    const before = b.textContent;
+    b.textContent = nf.format(Number(before.replace(/[^0-9]/g, '')) + 1);
+    btn.classList.add('on', 'bump');
+    btn.setAttribute('aria-pressed', 'true');
+    setTimeout(() => btn.classList.remove('bump'), 220);
+    voted.add(id); saveVoted(voted);
+    fetch(SITE_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY },
+      body: JSON.stringify({ action: 'vote', id }),
+    }).then((r) => (r.ok ? r.json() : Promise.reject(r)))
+      .then((x) => { if (typeof x.votes === 'number') b.textContent = nf.format(x.votes); })
+      .catch(() => { b.textContent = before; btn.classList.remove('on'); voted.delete(id); saveVoted(voted); });
+  });
+}
+
+const iForm = document.getElementById('ideaForm');
+if (iForm) {
+  const msg = document.getElementById('ideaMsg');
+  const send = document.getElementById('ideaSend');
+  iForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const title = iForm.querySelector('#iTitle').value.trim();
+    msg.hidden = true;
+    if (title.length < 4) {
+      msg.className = 'a-msg err';
+      msg.textContent = 'Please write your idea in a few words (at least 4 letters).';
+      msg.hidden = false;
+      return;
+    }
+    send.disabled = true;
+    send.textContent = 'Sending…';
+    try {
+      const res = await fetch(SITE_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY },
+        body: JSON.stringify({
+          action: 'suggest', title,
+          details: iForm.querySelector('#iDetails').value.trim(),
+          name: iForm.querySelector('#iName').value.trim(),
+          website: iForm.querySelector('#iWebsite').value,
+        }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      msg.className = 'a-msg ok';
+      msg.textContent = 'Thank you! Our team reads every idea — it shows here after a quick check.';
+      msg.hidden = false;
+      iForm.reset();
+    } catch (_) {
+      msg.className = 'a-msg err';
+      msg.textContent = "That didn't go through. Please try again in a moment.";
+      msg.hidden = false;
+    } finally {
+      send.disabled = false;
+      send.textContent = 'Send idea';
+    }
+  });
+}
+
+// ---- Reviews | Ideas switch (phones) ----
+const seg = document.querySelector('.a-seg');
+if (seg) {
+  const tabs = [...seg.querySelectorAll('button[data-pane]')];
+  const phone = window.matchMedia('(max-width: 760px)');
+  const select = (paneId, animate) => {
+    tabs.forEach((t, i) => {
+      const on = t.getAttribute('data-pane') === paneId;
+      t.setAttribute('aria-selected', String(on));
+      const pane = document.getElementById(t.getAttribute('data-pane'));
+      if (!pane) return;
+      if (on) {
+        pane.removeAttribute('hidden-phone');
+        if (animate) {
+          pane.style.setProperty('--dx', i === 0 ? '-24px' : '24px');
+          pane.classList.remove('swap'); void pane.offsetWidth; pane.classList.add('swap');
+        }
+      } else {
+        pane.setAttribute('hidden-phone', '');
+      }
+    });
+    seg.classList.toggle('right', paneId === tabs[1].getAttribute('data-pane'));
+  };
+  tabs.forEach((t) => t.addEventListener('click', () => select(t.getAttribute('data-pane'), true)));
+  const fromHash = () => {
+    if (location.hash === '#suggest') select('paneIdeas', false);
+    else select('paneReviews', false);
+    const target = location.hash === '#suggest' ? document.getElementById('ideaForm')
+      : location.hash === '#write' ? document.getElementById('reviewForm') : null;
+    if (target) setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+  };
+  fromHash();
+  window.addEventListener('hashchange', fromHash);
+  phone.addEventListener?.('change', () => fromHash());
+}
+
+// ---- Motion: hero entrance, scroll reveal, counting numbers ----
+const reduceMotion = (() => {
+  try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) { return true; }
+})();
+let revealObs = null;
+function revealNew(nodes) {
+  if (!revealObs) return;
+  [...nodes].forEach((el, i) => {
+    el.classList.add('rv');
+    el.style.setProperty('--d', `${Math.min(i, 6) * 0.07}s`);
+    revealObs.observe(el);
+  });
+}
+if (!reduceMotion && 'IntersectionObserver' in window) {
+  const hero = document.querySelector('.a-hero');
+  if (hero) hero.classList.add('go');
+  revealObs = new IntersectionObserver((entries) => {
+    entries.forEach((en) => {
+      if (en.isIntersecting) { en.target.classList.add('in'); revealObs.unobserve(en.target); }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  const groups = [
+    '.a-sec > h2, .a-sec > .a-h2, .a-sec > .a-lead',
+    '.a-bento > .a-tile', '.a-dl > .a-plat', '.a-steps > div',
+    '.a-duo > .a-pane', '.a-counter > div', '.a-seg',
+  ];
+  groups.forEach((sel) => revealNew(document.querySelectorAll(sel)));
+}
+function countUp(el, to) {
+  if (reduceMotion || !Number.isFinite(to) || to < 10) { el.textContent = nf.format(to); return; }
+  const start = performance.now(), dur = 1200;
+  const tick = (t) => {
+    const k = Math.min(1, (t - start) / dur);
+    el.textContent = nf.format(Math.round(to * (1 - Math.pow(1 - k, 3))));
+    if (k < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
 }
 
 // ---- Customer-care widget: floating button + form, on every page ----

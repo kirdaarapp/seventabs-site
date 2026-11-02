@@ -20,8 +20,8 @@
 <meta name="twitter:description" content="Invoicing, inventory, purchasing, payroll, multi-branch, multi-currency and real double-entry books — all in one app.">
 <meta name="twitter:image" content="https://7tabs.org/assets/logo.png">
 
-<link rel="stylesheet" href="assets/site.css?v=6f893750bc8f">
-<link rel="stylesheet" href="assets/apple.css?v=6f893750bc8f">
+<link rel="stylesheet" href="assets/site.css?v=68a962575aa9">
+<link rel="stylesheet" href="assets/apple.css?v=68a962575aa9">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -50,7 +50,7 @@
     <div class="nav-links">
       <a href="index.html" class="active">Overview</a>
       <a href="features.html">Features</a>
-      <a href="reviews.html">Reviews</a>
+      <a href="reviews.html">Reviews &amp; ideas</a>
       <a href="pricing.html">Pricing</a>
       <a href="help.html">Help</a>
     </div>
@@ -96,25 +96,26 @@
 <section class="a-soft" id="reviews">
   <div class="a-sec">
     <h2>Loved by people who run shops.</h2>
-    <div class="a-score" id="reviewScore" hidden><b>–</b><span class="a-stars"></span><span data-count></span></div>
-    <div class="a-rgrid" id="reviewList" data-limit="3"></div>
-    <p class="a-empty" id="reviewEmpty" hidden>Be the first to write a review.</p>
-    <p class="a-more"><a class="a-btn link" href="reviews.html">All reviews ›</a></p>
-  <form class="a-write" id="reviewForm" novalidate>
-    <b>Write a review</b>
-    <div class="a-pick" role="group" aria-label="Your rating">
-      <button type="button" aria-label="1 star">★</button><button type="button" aria-label="2 stars">★</button><button type="button" aria-label="3 stars">★</button><button type="button" aria-label="4 stars">★</button><button type="button" aria-label="5 stars">★</button>
+    <p class="a-lead">Read what owners say — or tell us what to build next.</p>
+    <div class="a-seg" role="tablist" aria-label="Reviews or ideas">
+      <span class="a-seg-pill" aria-hidden="true"></span>
+      <button type="button" role="tab" aria-selected="true" data-pane="paneReviews">Reviews</button>
+      <button type="button" role="tab" aria-selected="false" data-pane="paneIdeas">Ideas</button>
     </div>
-    <div class="row">
-      <input id="rName" maxlength="60" autocomplete="name" placeholder="Your name" aria-label="Your name" required>
-      <input id="rBusiness" maxlength="80" autocomplete="organization" placeholder="Business (optional)" aria-label="Business (optional)">
+    <div class="a-duo">
+      <div class="a-pane" id="paneReviews" role="tabpanel">
+        <div class="a-pane-head"><h3>Reviews</h3><div class="a-score" id="reviewScore" hidden><b>–</b><span class="a-stars"></span><span data-count></span></div></div>
+        <div class="a-stack" id="reviewList" data-limit="3"></div>
+        <p class="a-empty" id="reviewEmpty" hidden>No reviews yet — be the first.</p>
+      <p class="a-more"><a class="a-btn link" href="reviews.html#write">All reviews &amp; write one ›</a></p>
+      </div>
+      <div class="a-pane" id="paneIdeas" role="tabpanel">
+        <div class="a-pane-head"><h3>Ideas</h3><span class="a-pane-sub">What should we build next? Vote for the ones you want.</span></div>
+        <div class="a-stack" id="ideaList" data-limit="4"></div>
+        <p class="a-empty" id="ideaEmpty" hidden>No ideas yet — tell us what is missing.</p>
+      <p class="a-more"><a class="a-btn link" href="reviews.html#suggest">All ideas &amp; suggest one ›</a></p>
+      </div>
     </div>
-    <textarea id="rText" maxlength="600" placeholder="What do you like? What should be better?" aria-label="Your review" required></textarea>
-    <input class="hp-field" id="rWebsite" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
-    <div class="a-msg" id="reviewMsg" role="status" hidden></div>
-    <button class="a-btn primary small" id="reviewSend" type="submit" style="justify-self:start">Send review</button>
-  </form>
-  <p class="a-small" style="text-align:center">Reviews appear after a quick check.</p>
   </div>
 </section>
 
@@ -139,7 +140,7 @@
       <div class="foot-links">
         <a href="features.html">Features</a>
         <a href="pricing.html">Pricing</a>
-        <a href="reviews.html">Reviews</a>
+        <a href="reviews.html">Reviews &amp; ideas</a>
         <a href="download.html">Download</a>
         <a href="help.html">Help</a>
         <a href="help.html#contact">Contact</a>
@@ -158,6 +159,6 @@
   <a href="download.html" data-get="android">Get</a>
 </div>
 
-<script type="module" src="assets/site.js?v=6f893750bc8f"></script>
+<script type="module" src="assets/site.js?v=68a962575aa9"></script>
 </body>
 </html>
