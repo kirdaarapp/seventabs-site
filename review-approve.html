@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Review — SevenTabs</title>
+<link rel="icon" href="assets/favicon.png">
+<link rel="stylesheet" href="assets/site.css?v=70d04bbafc57">
+<link rel="stylesheet" href="assets/apple.css?v=70d04bbafc57">
+</head>
+<body>
+<header>
+  <nav class="wrap" aria-label="Main">
+    <a class="brand" href="index.html">
+      <img src="assets/logo.png" alt="" width="26" height="26">
+      SevenTabs
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Overview</a>
+      <a href="features.html">Features</a>
+      <a href="reviews.html">Reviews</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="help.html">Help</a>
+    </div>
+    <a class="nav-cta" href="download.html">Download</a>
+  </nav>
+</header>
+
+<main id="top">
+<section class="a-sec" style="text-align:center;max-width:560px">
+  <h1 class="a-h2" id="mTitle">Approve this review?</h1>
+  <p class="a-lead" id="mText">It will show on 7tabs.org for everyone.</p>
+  <div class="a-ctas">
+    <button class="a-btn primary" id="mGo" type="button">Approve</button>
+  </div>
+  <div class="a-msg" id="mMsg" role="status" hidden style="margin-top:20px"></div>
+  <p class="a-small" style="margin-top:28px"><a href="reviews.html" style="color:var(--accent)">See all reviews ›</a></p>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-row">
+      <a class="brand" href="index.html">
+        <img src="assets/logo.png" alt="" width="26" height="26">
+        SevenTabs
+      </a>
+      <div class="foot-links">
+        <a href="features.html">Features</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="reviews.html">Reviews</a>
+        <a href="download.html">Download</a>
+        <a href="help.html">Help</a>
+        <a href="help.html#contact">Contact</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="delete-account.html">Delete account</a>
+      </div>
+    </div>
+    <div class="foot-copy">© <span id="year"></span> SevenTabs · 7tabs.org</div>
+  </div>
+</footer>
+
+<script>
+// Opened from the "New review" email (site-public Edge Function). The
+// link is signed; nothing happens until the owner presses the button, so
+// email link-scanners that open links can't approve or delete anything.
+(function () {
+  var q = new URLSearchParams(location.search);
+  var id = q.get('id') || '', what = q.get('do') || '', sig = q.get('sig') || '';
+  var title = document.getElementById('mTitle');
+  var text = document.getElementById('mText');
+  var go = document.getElementById('mGo');
+  var msg = document.getElementById('mMsg');
+  function show(ok, t) { msg.className = 'a-msg ' + (ok ? 'ok' : 'err'); msg.textContent = t; msg.hidden = false; }
+  if (!id || !sig || (what !== 'approve' && what !== 'delete')) {
+    title.textContent = 'This link is not complete';
+    text.textContent = 'Please open the button from the email again.';
+    go.hidden = true;
+    return;
+  }
+  if (what === 'delete') {
+    title.textContent = 'Delete this review?';
+    text.textContent = 'It will be removed for good.';
+    go.textContent = 'Delete';
+    go.style.background = '#b91c1c';
+  }
+  go.addEventListener('click', function () {
+    go.disabled = true;
+    fetch('https://kamjtddqgofuasublpwc.supabase.co/functions/v1/site-public', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: 'sb_publishable_25vQKsEQqDUEjEkuglU1Rg_GzEW9S3a' },
+      body: JSON.stringify({ action: 'moderate', id: id, do: what, sig: sig })
+    }).then(function (r) { return r.json().then(function (d) { return { r: r, d: d }; }); })
+      .then(function (x) {
+        if (!x.r.ok) { show(false, x.d && x.d.error ? x.d.error : 'That did not work. Please try again.'); go.disabled = false; return; }
+        go.hidden = true;
+        show(true, x.d.note ? x.d.note : (what === 'approve' ? 'Approved — it is on the website now.' : 'Deleted.'));
+      })
+      .catch(function () { show(false, 'No connection. Please try again.'); go.disabled = false; });
+  });
+})();
+</script>
+<script type="module" src="assets/site.js?v=70d04bbafc57"></script>
+</body>
+</html>

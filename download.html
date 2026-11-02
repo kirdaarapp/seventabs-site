@@ -3,184 +3,60 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Download — SevenTabs</title>
-<meta name="description" content="Get SevenTabs: run it in the browser, or install the native Windows or Android app. Sign in once and it installs itself for your device.">
+<title>Download SevenTabs — Windows, Android, Mac</title>
+<meta name="description" content="Download SevenTabs for Windows, Android or Mac. Free for 30 days, no account needed on the website.">
+<meta name="keywords" content="SevenTabs, 7tabs, accounting software, light ERP, invoicing software, inventory management, small business accounting, retail accounting app">
 <link rel="canonical" href="https://7tabs.org/download.html">
 <link rel="icon" href="assets/favicon.png">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="SevenTabs">
-<meta property="og:title" content="Download — SevenTabs">
-<meta property="og:description" content="Run SevenTabs in the browser, or install the native Windows or Android app.">
+<meta property="og:title" content="Download SevenTabs — Windows, Android, Mac">
+<meta property="og:description" content="Invoicing, inventory, purchasing, payroll, multi-branch, multi-currency and real double-entry books — all in one app.">
 <meta property="og:url" content="https://7tabs.org/download.html">
 <meta property="og:image" content="https://7tabs.org/assets/logo.png">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Download — SevenTabs">
-<meta name="twitter:description" content="Run SevenTabs in the browser, or install the native Windows or Android app.">
+<meta name="twitter:title" content="Download SevenTabs — Windows, Android, Mac">
+<meta name="twitter:description" content="Invoicing, inventory, purchasing, payroll, multi-branch, multi-currency and real double-entry books — all in one app.">
 <meta name="twitter:image" content="https://7tabs.org/assets/logo.png">
 
-<link rel="stylesheet" href="assets/site.css?v=55544ecf8542">
-<link rel="stylesheet" href="assets/home.css?v=55544ecf8542">
-<link rel="stylesheet" href="assets/pricing.css?v=55544ecf8542">
+<link rel="stylesheet" href="assets/site.css?v=70d04bbafc57">
+<link rel="stylesheet" href="assets/apple.css?v=70d04bbafc57">
 </head>
 <body>
-<canvas id="fx" aria-hidden="true"></canvas>
-
 <header>
-  <nav class="wrap">
+  <nav class="wrap" aria-label="Main">
     <a class="brand" href="index.html">
-      <img src="assets/logo.png" alt="SevenTabs logo">
+      <img src="assets/logo.png" alt="" width="26" height="26">
       SevenTabs
     </a>
     <div class="nav-links">
+      <a href="index.html">Overview</a>
       <a href="features.html">Features</a>
-      <a href="how-it-works.html">How it works</a>
+      <a href="reviews.html">Reviews</a>
       <a href="pricing.html">Pricing</a>
-      <a href="download.html" class="active">Download</a>
       <a href="help.html">Help</a>
     </div>
-    <button class="nav-cta" id="navAppBtn" type="button">Get SevenTabs →</button>
+    <a class="nav-cta" href="download.html">Download</a>
   </nav>
 </header>
 
-<div class="modal-overlay" id="signInOverlay" role="dialog" aria-modal="true" aria-labelledby="signInTitle">
-  <div class="modal">
-    <button class="modal-close" id="closeSignIn" type="button" aria-label="Close">&times;</button>
-    <img src="assets/logo.png" alt="" width="36" height="36" style="border-radius:8px;margin-bottom:16px">
-    <h3 id="signInTitle">Sign in to SevenTabs</h3>
-    <p class="modal-sub" id="signInSubtitle">Owners and team members sign in with the email they were set up with.</p>
-    <form id="signInForm">
-      <label class="field-label" for="siEmail">Email</label>
-      <input class="field-input" id="siEmail" type="email" autocomplete="email" required>
-      <label class="field-label" for="siPassword">Password</label>
-      <input class="field-input" id="siPassword" type="password" autocomplete="current-password" required>
-      <div class="modal-error" id="signInError" hidden></div>
-      <button class="btn btn-primary" type="submit" id="signInSubmit" style="width:100%;justify-content:center;margin-top:6px">Sign in</button>
-    </form>
-    <p class="modal-sub" id="signInFooter" style="margin-top:18px">New business? <button type="button" id="goToSignUpBtn" class="link-btn">Create your account →</button></p>
-
-    <div id="signUpPanel" hidden>
-      <form id="signUpForm">
-        <label class="field-label" for="suBusiness">Business name</label>
-        <input class="field-input" id="suBusiness" type="text" autocomplete="organization" required>
-        <label class="field-label" for="suName">Your name</label>
-        <input class="field-input" id="suName" type="text" autocomplete="name" required>
-        <label class="field-label" for="suEmail">Email</label>
-        <input class="field-input" id="suEmail" type="email" autocomplete="email" required>
-        <label class="field-label" for="suPhone">Phone number</label>
-        <input class="field-input" id="suPhone" type="tel" autocomplete="tel" required>
-        <label class="field-label" for="suPassword">Password</label>
-        <input class="field-input" id="suPassword" type="password" autocomplete="new-password" minlength="8" required>
-        <p class="modal-sub" style="margin:6px 0 0;font-size:12px">At least 8 characters, with uppercase, lowercase, a number and a symbol.</p>
-        <label class="field-label" for="suPasswordConfirm">Confirm password</label>
-        <input class="field-input" id="suPasswordConfirm" type="password" autocomplete="new-password" minlength="8" required>
-        <div class="modal-error" id="signUpError" hidden></div>
-        <button class="btn btn-primary" type="submit" id="signUpSubmit" style="width:100%;justify-content:center;margin-top:6px">Create account</button>
-      </form>
-      <p class="modal-sub" style="margin-top:18px">Already have an account? <button type="button" id="signUpBackBtn" class="link-btn">Sign in instead</button></p>
-    </div>
-
-    <div id="signInOtp" hidden>
-      <div class="otp-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M22 6l-10 7L2 6"/></svg></div>
-      <p class="modal-sub" id="otpText" style="text-align:center"></p>
-      <div class="otp-boxes" id="otpBoxes">
-        <input class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" aria-label="Digit 1">
-        <input class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 2">
-        <input class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 3">
-        <input class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 4">
-        <input class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 5">
-        <input class="otp-box" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 6">
-      </div>
-      <div class="modal-error" id="otpError" hidden></div>
-      <button class="btn btn-primary" type="button" id="otpVerifyBtn" style="width:100%;justify-content:center;margin-top:20px">Verify &amp; continue</button>
-      <p class="modal-sub" style="margin-top:16px;text-align:center">
-        <button type="button" id="otpResendBtn" class="link-btn">Resend code</button>
-      </p>
-      <p class="modal-sub" style="text-align:center;margin-bottom:0">
-        <button type="button" id="otpBackBtn" class="link-btn">Not you? Use a different account</button>
-      </p>
-    </div>
-
-    <div id="signInSuccess" hidden>
-      <div class="icon" style="margin:0 0 16px"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
-      <p id="signInSuccessText" style="color:var(--ink-dim);font-size:14.5px;margin:0 0 18px"></p>
-      <a class="btn btn-primary" id="signInDownloadBtn" style="width:100%;justify-content:center;display:none" href="#" download></a>
-      <p class="modal-sub" style="margin-top:14px;text-align:center">
-        <a href="/app/" id="signInBrowserFallback">Or open SevenTabs in your browser →</a>
-      </p>
-    </div>
-  </div>
-</div>
-
 <main id="top">
-
-  <section class="pricing-hero">
-    <div class="wrap">
-      <h1 class="kinetic-h1">
-        <span class="kw-mask"><span class="kw" style="--i:0">Run</span></span>
-        <span class="kw-mask"><span class="kw" style="--i:1">it</span></span>
-        <span class="kw-mask"><span class="kw" style="--i:2">anywhere,</span></span>
-        <span class="kw-mask"><span class="kw grad" style="--i:3">install</span></span>
-        <span class="kw-mask"><span class="kw grad" style="--i:4">it</span></span>
-        <span class="kw-mask"><span class="kw grad" style="--i:5">natively.</span></span>
-      </h1>
-      <p>The browser version is always the newest build. Native installers are available below for offline desktop and Android use.</p>
-    </div>
-  </section>
-
-  <section style="padding-top:0">
-    <div class="wrap">
-      <div class="download-grid">
-        <div class="dl-card" data-animate>
-          <div class="icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
-          <h3>Windows</h3>
-          <p>Native desktop build. Download, unzip, run SevenTabs.exe.</p>
-          <button class="btn btn-ghost" type="button" data-platform="windows">Download for Windows</button>
-        </div>
-        <div class="dl-card" data-animate>
-          <div class="icon"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg></div>
-          <h3>Android</h3>
-          <p>Direct APK install. Play Store listing is coming soon.</p>
-          <button class="btn btn-ghost" type="button" data-platform="android">Download for Android</button>
-        </div>
-        <div class="dl-card" data-animate>
-          <div class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1"/><path d="M2 20h20"/></svg></div>
-          <h3>Mac</h3>
-          <p>Native desktop build. Download, unzip, run SevenTabs.app.</p>
-          <button class="btn btn-ghost" type="button" data-platform="mac">Download for Mac</button>
-        </div>
-        <div class="dl-card dl-card-soon" data-animate>
-          <div class="icon"><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/><path d="M10 5h4"/></svg></div>
-          <h3>iOS</h3>
-          <p>Not yet available — needs an Apple Developer account and App Store/TestFlight review first.</p>
-          <span class="dl-soon-badge">Coming soon</span>
-        </div>
-      </div>
-      <p class="dl-note">Downloads are free and start immediately — no sign-in or email required. They're direct downloads, not app-store listings yet, so Windows SmartScreen and macOS Gatekeeper will show an "unknown publisher" warning the first time (Android too). See <a href="help.html#security">Security &amp; downloads</a> on the Help page for why that happens and when it'll go away.</p>
-    </div>
-  </section>
-
-  <section>
-    <div class="wrap">
-      <!-- Reserved Google AdSense slot — see help.html for the full explanation.
-           Inert until a real, approved AdSense account is connected. -->
-      <div class="ad-slot" data-animate>
-        <span class="ad-slot-label">Advertisement</span>
-        <div class="ad-slot-placeholder">Ad space reserved for Google AdSense</div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="wrap">
-      <div class="cta-banner">
-        <div class="cta-offer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> 30 days free — no card required</div>
-        <h2>Ready to see it running your books?</h2>
-        <p>Sign in and SevenTabs sets itself up for your device — start with your first invoice today.</p>
-        <button class="btn btn-primary" id="ctaAppBtn" type="button">Sign in to get SevenTabs →</button>
-      </div>
-    </div>
-  </section>
+<section class="a-sec">
+  <h1 class="a-h2">Download. Open. Done.</h1>
+  <p class="a-lead">Free for 30 days. No account on this website — you make your company inside the app.</p>
+  <div class="a-dl">
+    <div class="a-plat" data-plat="windows"><span class="a-tag">Your device</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5 10.5 4.5v7H3zM11.5 4.3 21 3v8.5h-9.5zM3 12.5h7.5v7L3 18.5zM11.5 12.5H21V21l-9.5-1.3z"/></svg><h3>Windows</h3><p>Windows 10 and 11</p><a class="a-btn out small" href="download.html" data-get="windows">Download</a></div>
+    <div class="a-plat" data-plat="android"><span class="a-tag">Your device</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zM3.5 8C2.67 8 2 8.67 2 9.5v7c0 .83.67 1.5 1.5 1.5S5 17.33 5 16.5v-7C5 8.67 4.33 8 3.5 8zm17 0c-.83 0-1.5.67-1.5 1.5v7c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-7c0-.83-.67-1.5-1.5-1.5zm-4.97-5.84l1.3-1.3c.2-.2.2-.51 0-.71-.2-.2-.51-.2-.71 0l-1.48 1.48C13.85 1.23 12.95 1 12 1c-.96 0-1.86.23-2.66.63L7.85.15c-.2-.2-.51-.2-.71 0-.2.2-.2.51 0 .71l1.31 1.31C6.97 3.26 6 5.01 6 7h12c0-1.99-.97-3.75-2.47-4.84zM10 5H9V4h1v1zm5 0h-1V4h1v1z"/></svg><h3>Android</h3><p>Phones and tablets · APK</p><a class="a-btn out small" href="download.html" data-get="android">Download</a></div>
+    <div class="a-plat" data-plat="mac"><span class="a-tag">Your device</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.4 12.6c0-2.4 2-3.5 2-3.6-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.2-2.8.9-3.5.9s-1.9-.8-3.1-.8C6.8 7.3 5.3 8.2 4.5 9.7c-1.7 2.9-.4 7.2 1.2 9.5.8 1.1 1.7 2.4 2.9 2.4s1.6-.8 3.1-.8 1.8.8 3.1.7 2-1.1 2.8-2.3c.9-1.3 1.2-2.5 1.3-2.6-.1 0-2.5-.9-2.5-4zM14.2 5.6c.6-.8 1.1-1.9 1-3-.9 0-2.1.6-2.7 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2.1-.5 2.7-1.3z"/></svg><h3>Mac</h3><p>macOS 12 or newer</p><a class="a-btn out small" href="download.html" data-get="mac">Download</a></div>
+  </div>
+  <div class="a-steps">
+    <div><h3>Download</h3><p>Tap the button for your device. The file is saved to your Downloads.</p></div>
+    <div><h3>Open it</h3><p>Windows: unzip and run SevenTabs. Android: open the APK and allow install.</p></div>
+    <div><h3>Make your company</h3><p>Create your company in the app, or join with the email your owner invited.</p></div>
+  </div>
+  <p class="a-small" style="text-align:center;margin-top:32px">iPhone and iPad are coming later. Need help? <a href="help.html#contact" style="color:var(--accent)">Contact us</a>.</p>
+</section>
 
 </main>
 
@@ -188,24 +64,31 @@
   <div class="wrap">
     <div class="foot-row">
       <a class="brand" href="index.html">
-        <img src="assets/logo.png" alt="SevenTabs logo">
+        <img src="assets/logo.png" alt="" width="26" height="26">
         SevenTabs
       </a>
       <div class="foot-links">
         <a href="features.html">Features</a>
         <a href="pricing.html">Pricing</a>
+        <a href="reviews.html">Reviews</a>
+        <a href="download.html">Download</a>
         <a href="help.html">Help</a>
         <a href="help.html#contact">Contact</a>
         <a href="privacy.html">Privacy</a>
         <a href="terms.html">Terms</a>
-        <button id="footAppBtn" type="button" style="background:none;border:0;color:inherit;font:inherit;cursor:pointer;padding:0">Get SevenTabs</button>
+        <a href="delete-account.html">Delete account</a>
       </div>
     </div>
-    <div class="foot-copy">© <span id="year"></span> SevenTabs. All rights reserved.</div>
+    <div class="foot-copy">© <span id="year"></span> SevenTabs · 7tabs.org</div>
   </div>
 </footer>
 
-<script type="module" src="assets/site.js?v=55544ecf8542"></script>
+<div class="a-mbar" id="mbar" hidden>
+  <img src="assets/logo.png" alt="" width="34" height="34">
+  <div>SevenTabs<span>Free for 30 days · Android</span></div>
+  <a href="download.html" data-get="android">Get</a>
+</div>
 
+<script type="module" src="assets/site.js?v=70d04bbafc57"></script>
 </body>
 </html>

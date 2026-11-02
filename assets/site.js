@@ -1,785 +1,264 @@
-// Shared sign-in + download logic for every page on 7tabs.org. Each page
-// includes this as a module script and provides the same modal markup
-// (see index.html's #signInOverlay) plus whichever of these optional
-// trigger buttons it has: #navAppBtn (every page has this one),
-// #heroAppBtn, #ctaAppBtn, #footAppBtn.
-//
-// The Supabase client is loaded lazily (see getSupabase() below), not as
-// a top-level static import. A static `import ... from 'https://cdn...'`
-// used to sit here — but a static import failing for ANY reason (a flaky
-// mobile connection, an ad-blocker or privacy browser blocking CDN
-// scripts, a regional block, a transient jsDelivr outage) throws before
-// this module's body runs at all, taking down everything below it: the
-// scroll-reveal that makes feature cards/pricing/FAQ/download sections
-// visible, the particle background, the customer-care widget — not just
-// sign-in. Confirmed directly (this exact failure mode, reproduced by
-// blocking the CDN request) as the real cause behind "the site doesn't
-// show properly on mobile," where a CDN hiccup is far more likely than
-// on a desktop's wired connection. Deferring the import to only when
-// something actually needs Supabase means a CDN failure now degrades to
-// "sign-in doesn't work" instead of "half the page is permanently blank."
+// Shared script for every page on 7tabs.org (2026-11 redesign).
+// No sign-in on the website any more: every "get the app" button is a
+// direct download for the visitor's device. Also: honest visitor and
+// download counts, customer reviews, and the customer-care widget.
+// Everything here fails quietly — if the cloud can't be reached, the
+// page still works and simply hides the numbers/reviews.
+
 const SUPABASE_URL = 'https://kamjtddqgofuasublpwc.supabase.co';
+// Supabase's publishable key: safe in client code (RLS + the functions
+// decide what it can do).
 const SUPABASE_ANON_KEY = 'sb_publishable_25vQKsEQqDUEjEkuglU1Rg_GzEW9S3a';
-let _supabaseClientPromise = null;
-function getSupabase() {
-  if (!_supabaseClientPromise) {
-    _supabaseClientPromise = import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm')
-      .then(({ createClient }) => createClient(SUPABASE_URL, SUPABASE_ANON_KEY))
-      .catch((err) => {
-        // Don't cache a failed load forever — a transient network blip
-        // shouldn't permanently break sign-in for the rest of the visit;
-        // the next call (e.g. the visitor retries) gets a fresh attempt.
-        _supabaseClientPromise = null;
-        throw err;
-      });
-  }
-  return _supabaseClientPromise;
-}
+const SITE_API = `${SUPABASE_URL}/functions/v1/site-public`;
 
 const yearEl = document.getElementById('year');
 if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-// Scroll-reveal for every [data-animate] element on the page (feature
-// cards, steps, plans, download cards, FAQ items, contact card). Runs
-// on every page since it only touches elements that opt in via the
-// attribute — pages with none of them are unaffected.
+// Scroll-reveal for [data-animate] elements (older pages use it).
 const revealTargets = document.querySelectorAll('[data-animate]');
 if (revealTargets.length && 'IntersectionObserver' in window) {
-  const revealObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('in-view');
-          revealObserver.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.15, rootMargin: '0px 0px -60px 0px' }
-  );
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
   revealTargets.forEach((el) => revealObserver.observe(el));
 } else {
   revealTargets.forEach((el) => el.classList.add('in-view'));
 }
 
-// ---- Ambient particle field (dark starfield + cursor glow) ----
-// A restrained nod to the reference sites shared for this project —
-// small drifting/twinkling points plus a soft glow that follows the
-// cursor. Off entirely under prefers-reduced-motion (site.css also
-// hides the canvas in that case — this is the animation-side half),
-// and paused whenever the tab isn't visible so it never wastes battery.
-(function initParticleField() {
-  const canvas = document.getElementById('fx');
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!canvas || reduceMotion) return;
-
-  const ctx = canvas.getContext('2d');
-  const COLORS = ['108,99,255', '156,149,255', '255,255,255'];
-  let w = 0;
-  let h = 0;
-  let particles = [];
-  let rafId = null;
-  const mouse = { x: -9999, y: -9999 };
-
-  function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    w = window.innerWidth;
-    h = window.innerHeight;
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-    canvas.style.width = `${w}px`;
-    canvas.style.height = `${h}px`;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const count = Math.min(120, Math.round((w * h) / 14000));
-    particles = Array.from({ length: count }, () => ({
-      x: Math.random() * w,
-      y: Math.random() * h,
-      r: Math.random() * 1.6 + 0.4,
-      vx: (Math.random() - 0.5) * 0.12,
-      vy: (Math.random() - 0.5) * 0.12,
-      c: COLORS[Math.floor(Math.random() * COLORS.length)],
-      baseAlpha: Math.random() * 0.5 + 0.15,
-      twinkle: Math.random() * Math.PI * 2,
-      twinkleSpeed: Math.random() * 0.015 + 0.005,
-    }));
-  }
-
-  function frame() {
-    ctx.clearRect(0, 0, w, h);
-
-    if (mouse.x > -999) {
-      const glow = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 220);
-      glow.addColorStop(0, 'rgba(108,99,255,0.10)');
-      glow.addColorStop(1, 'rgba(108,99,255,0)');
-      ctx.fillStyle = glow;
-      ctx.fillRect(mouse.x - 220, mouse.y - 220, 440, 440);
-    }
-
-    particles.forEach((p) => {
-      p.x += p.vx;
-      p.y += p.vy;
-      if (p.x < 0) p.x = w;
-      if (p.x > w) p.x = 0;
-      if (p.y < 0) p.y = h;
-      if (p.y > h) p.y = 0;
-
-      // Gentle pull toward the cursor — parallax-ish, never strong
-      // enough to feel like a game, just a hint the field is alive.
-      const dx = mouse.x - p.x;
-      const dy = mouse.y - p.y;
-      const dist = Math.hypot(dx, dy);
-      if (dist > 0.01 && dist < 160) {
-        p.x -= (dx / dist) * 0.25;
-        p.y -= (dy / dist) * 0.25;
-      }
-
-      p.twinkle += p.twinkleSpeed;
-      const alpha = p.baseAlpha * (0.6 + 0.4 * Math.sin(p.twinkle));
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${p.c},${alpha})`;
-      ctx.fill();
-    });
-
-    rafId = requestAnimationFrame(frame);
-  }
-
-  function start() {
-    if (!rafId) rafId = requestAnimationFrame(frame);
-  }
-  function stop() {
-    if (rafId) {
-      cancelAnimationFrame(rafId);
-      rafId = null;
-    }
-  }
-
-  window.addEventListener('resize', resize);
-  window.addEventListener('pointermove', (e) => {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
-  });
-  window.addEventListener('pointerleave', () => {
-    mouse.x = -9999;
-    mouse.y = -9999;
-  });
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) stop(); else start();
-  });
-
-  resize();
-  start();
-})();
-
-// Same project the app itself talks to (lib/core/supabase_config.dart) —
-// this key is Supabase's own "safe to ship in client code" publishable
-// key, meaningless without the Row Level Security policies enforced
-// server-side. Signing in here writes the session to localStorage under
-// the same 'sb-<project-ref>-auth-token' key supabase_flutter reads on
-// web, so /app/ picks up this exact session on load — a real sign-in,
-// not a redirect-and-hope. (SUPABASE_URL/getSupabase() are defined at the
-// top of this file, ahead of the code below that doesn't need them.)
-
-// Honest, real "businesses on SevenTabs" count — see
-// supabase/functions/public-stats. Not a fabricated "N people online"
-// figure: it's the real count of registered companies, refreshed
-// periodically so the number on the page can't silently go stale.
-const pillText = document.getElementById('pillText');
-if (pillText) {
-  const loadStats = () => {
-    fetch(`${SUPABASE_URL}/functions/v1/public-stats`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data && typeof data.companies === 'number' && data.companies > 0) {
-          pillText.textContent = `${data.companies}+ businesses run on SevenTabs`;
-        }
-      })
-      .catch(() => {}); // Keep the static fallback text — never show a broken stat.
-  };
-  loadStats();
-  setInterval(loadStats, 60000);
+// ---- Downloads ----
+export const BUILDS = {
+  windows: {
+    label: 'Windows', file: 'SevenTabs-Windows.zip',
+    url: 'https://github.com/kirdaarapp/seventabs-site/releases/latest/download/SevenTabs-Windows.zip',
+  },
+  android: {
+    label: 'Android', file: 'SevenTabs-Android.apk',
+    url: 'https://github.com/kirdaarapp/seventabs-site/releases/latest/download/SevenTabs-Android.apk',
+  },
+  mac: {
+    label: 'Mac', file: 'SevenTabs-macOS.zip',
+    url: 'https://github.com/kirdaarapp/seventabs-site/releases/latest/download/SevenTabs-macOS.zip',
+  },
+};
+const ICONS = {
+  windows: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5 10.5 4.5v7H3zM11.5 4.3 21 3v8.5h-9.5zM3 12.5h7.5v7L3 18.5zM11.5 12.5H21V21l-9.5-1.3z"/></svg>',
+  android: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zM3.5 8C2.67 8 2 8.67 2 9.5v7c0 .83.67 1.5 1.5 1.5S5 17.33 5 16.5v-7C5 8.67 4.33 8 3.5 8zm17 0c-.83 0-1.5.67-1.5 1.5v7c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-7c0-.83-.67-1.5-1.5-1.5zm-4.97-5.84l1.3-1.3c.2-.2.2-.51 0-.71-.2-.2-.51-.2-.71 0l-1.48 1.48C13.85 1.23 12.95 1 12 1c-.96 0-1.86.23-2.66.63L7.85.15c-.2-.2-.51-.2-.71 0-.2.2-.2.51 0 .71l1.31 1.31C6.97 3.26 6 5.01 6 7h12c0-1.99-.97-3.75-2.47-4.84zM10 5H9V4h1v1zm5 0h-1V4h1v1z"/></svg>',
+  mac: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.4 12.6c0-2.4 2-3.5 2-3.6-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.2-2.8.9-3.5.9s-1.9-.8-3.1-.8C6.8 7.3 5.3 8.2 4.5 9.7c-1.7 2.9-.4 7.2 1.2 9.5.8 1.1 1.7 2.4 2.9 2.4s1.6-.8 3.1-.8 1.8.8 3.1.7 2-1.1 2.8-2.3c.9-1.3 1.2-2.5 1.3-2.6-.1 0-2.5-.9-2.5-4zM14.2 5.6c.6-.8 1.1-1.9 1-3-.9 0-2.1.6-2.7 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2.1-.5 2.7-1.3z"/></svg>',
+};
+export function detectPlatform() {
+  const ua = navigator.userAgent || '';
+  if (/Android/i.test(ua)) return 'android';
+  if (/iPhone|iPad|iPod/i.test(ua)) return null; // no iOS build yet
+  if (/Windows/i.test(ua)) return 'windows';
+  if (/Macintosh|Mac OS X/i.test(ua)) return 'mac';
+  return null;
 }
+const myPlatform = detectPlatform();
 
-// Which browser/device this is, for both the "device already trusted"
-// check below and the native-download step further down.
-const DEVICE_TRUST_KEY = 'sevenTabsTrustedEmails';
-function isDeviceTrusted(email) {
+function track(kind, platform) {
   try {
-    const list = JSON.parse(localStorage.getItem(DEVICE_TRUST_KEY) || '[]');
-    return list.includes(email.trim().toLowerCase());
-  } catch {
-    return false;
-  }
+    fetch(SITE_API, {
+      method: 'POST',
+      keepalive: true,
+      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY },
+      body: JSON.stringify({ action: 'hit', kind, platform: platform || null, path: location.pathname, sid: sessionId() }),
+    }).catch(() => {});
+  } catch (_) { /* never block the page */ }
 }
-function markDeviceTrusted(email) {
+function sessionId() {
   try {
-    const list = JSON.parse(localStorage.getItem(DEVICE_TRUST_KEY) || '[]');
-    const norm = email.trim().toLowerCase();
-    if (!list.includes(norm)) list.push(norm);
-    localStorage.setItem(DEVICE_TRUST_KEY, JSON.stringify(list));
-  } catch {
-    // Worst case this device asks for a code again next time — never
-    // block sign-in over a storage failure (e.g. private browsing).
-  }
+    let id = sessionStorage.getItem('st_sid');
+    if (!id) {
+      id = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2));
+      sessionStorage.setItem('st_sid', id);
+    }
+    return id;
+  } catch (_) { return 'anon'; }
 }
 
-const overlay = document.getElementById('signInOverlay');
-// No overlay on this page (shouldn't happen — every page carries the
-// shared header partial — but fail quietly rather than throw).
-if (overlay) {
-  const navAppBtn = document.getElementById('navAppBtn');
-  const heroAppBtn = document.getElementById('heroAppBtn');
-  const heroAppBtnLabel = document.getElementById('heroAppBtnLabel');
-  const ctaAppBtn = document.getElementById('ctaAppBtn');
-  const footAppBtn = document.getElementById('footAppBtn');
-  const closeBtn = document.getElementById('closeSignIn');
-  const modalTitle = document.getElementById('signInTitle');
-  const modalSubtitle = document.getElementById('signInSubtitle');
-  const form = document.getElementById('signInForm');
-  const footer = document.getElementById('signInFooter');
-  const errorBox = document.getElementById('signInError');
-  const submitBtn = document.getElementById('signInSubmit');
-  const successBox = document.getElementById('signInSuccess');
-  const successText = document.getElementById('signInSuccessText');
-  const downloadBtn = document.getElementById('signInDownloadBtn');
+function startDownload(platform) {
+  const b = BUILDS[platform];
+  if (!b) return;
+  track('download', platform);
+  const a = document.createElement('a');
+  a.href = b.url;
+  a.setAttribute('download', b.file);
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
 
-  // ---- Signup: full business signup on the website itself, instead of
-  // sending "New business?" off to /app/ (which used to skip straight to
-  // the app's own login screen with no way to actually create an
-  // account from here). Collects the same details the app's own
-  // onboarding asks for (business name, your name, email, phone,
-  // password), creates the Supabase auth user + company row directly,
-  // then reuses the exact same OTP device-confirmation and
-  // download-on-success flow as sign-in below.
-  const goToSignUpBtn = document.getElementById('goToSignUpBtn');
-  const signUpPanel = document.getElementById('signUpPanel');
-  const signUpForm = document.getElementById('signUpForm');
-  const signUpError = document.getElementById('signUpError');
-  const signUpSubmit = document.getElementById('signUpSubmit');
-  const signUpBackBtn = document.getElementById('signUpBackBtn');
-  const DEFAULT_TITLE = modalTitle ? modalTitle.textContent : '';
-  const DEFAULT_SUBTITLE = modalSubtitle ? modalSubtitle.textContent : '';
-  let justSignedUp = false;
-
-  // One-time device-confirmation code step — mirrors the app's own
-  // device-trust flow (CloudAuthRepository.sendDeviceConfirmationCode /
-  // verifyDeviceConfirmationCode, DeviceTrustStore): a password alone is
-  // never enough on a device that hasn't proven it controls the inbox
-  // yet. localStorage here plays the same role DeviceTrustStore plays
-  // on the app side — once verified, this exact browser skips the code
-  // on future sign-ins with the same email.
-  const otpPanel = document.getElementById('signInOtp');
-  const otpIcon = otpPanel ? otpPanel.querySelector('.otp-icon') : null;
-  const otpText = document.getElementById('otpText');
-  const otpBoxesWrap = document.getElementById('otpBoxes');
-  const otpBoxes = otpBoxesWrap
-    ? Array.from(otpBoxesWrap.querySelectorAll('.otp-box'))
-    : [];
-  const otpError = document.getElementById('otpError');
-  const otpVerifyBtn = document.getElementById('otpVerifyBtn');
-  const otpResendBtn = document.getElementById('otpResendBtn');
-  const otpBackBtn = document.getElementById('otpBackBtn');
-
-  let hasSession = false;
-  let pendingEmail = '';
-  let otpCooldownTimer = null;
-
-  // Builds are published to kirdaarapp/seventabs-site's releases, not
-  // this repo's own — Account-software is private, and GitHub Release
-  // assets on a private repo 404 for an anonymous download regardless
-  // of anything here (confirmed directly: even the release page itself
-  // 404s with no auth). seventabs-site is already public (it's the
-  // GitHub Pages mirror serving 7tabs.org itself), so its releases are
-  // real public downloads. See build-windows.yml's own comment on its
-  // release step for the full story.
-  const PLATFORM_BUILDS = {
-    windows: {
-      label: 'Windows',
-      file: 'SevenTabs-Windows.zip',
-      url: 'https://github.com/kirdaarapp/seventabs-site/releases/latest/download/SevenTabs-Windows.zip',
-    },
-    android: {
-      label: 'Android',
-      file: 'SevenTabs-Android.apk',
-      url: 'https://github.com/kirdaarapp/seventabs-site/releases/latest/download/SevenTabs-Android.apk',
-    },
-    mac: {
-      label: 'Mac',
-      file: 'SevenTabs-macOS.zip',
-      url: 'https://github.com/kirdaarapp/seventabs-site/releases/latest/download/SevenTabs-macOS.zip',
-    },
-  };
-
-  // Windows/Android/Mac get a real native build; iOS (no build
-  // published — see the Download page's "Coming soon" card) falls
-  // back to the browser, which is the only thing that'll actually run
-  // there today.
-  function detectDownload() {
-    const ua = navigator.userAgent;
-    if (/Windows/i.test(ua)) return PLATFORM_BUILDS.windows;
-    if (/Android/i.test(ua)) return PLATFORM_BUILDS.android;
-    if (/Macintosh/i.test(ua)) return PLATFORM_BUILDS.mac;
-    return null;
-  }
-
-  // A real <a download> click for a given platform's build — same safe
-  // technique showSuccess() below uses (never location.href, so it can
-  // never navigate the page away even without a Content-Disposition
-  // header). Used by the platform download cards directly, with no
-  // sign-in/session involved at all: getting the installer is free and
-  // needs no account, only the cloud/team product does.
-  function triggerDirectDownload(platform) {
-    const build = PLATFORM_BUILDS[platform];
-    if (!build) return;
-    const a = document.createElement('a');
-    a.href = build.url;
-    a.setAttribute('download', build.file);
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  }
-
-  // Shown once a session exists AND this device has proven it via the
-  // OTP step (or already had, on a repeat visit) — downloads first,
-  // browser is the fallback link, never the other way around.
-  function showSuccess() {
-    form.hidden = true;
-    footer.hidden = true;
-    if (signUpPanel) signUpPanel.hidden = true;
-    if (otpPanel) otpPanel.hidden = true;
-    successBox.hidden = false;
-    const greeting = justSignedUp ? "Your account is ready and you're signed in." : "You're signed in.";
-    const dl = detectDownload();
-    if (dl) {
-      successText.textContent = `${greeting} Downloading SevenTabs for ${dl.label}…`;
-      downloadBtn.href = dl.url;
-      downloadBtn.setAttribute('download', dl.file);
-      downloadBtn.textContent = `Download for ${dl.label} again`;
-      downloadBtn.style.display = 'inline-flex';
-      // A real <a download> click — unlike setting location.href, this
-      // can never navigate the page away even if a proxy/CDN ever serves
-      // the asset without a Content-Disposition: attachment header.
-      downloadBtn.click();
+// [data-get]           → "Download for <your device>" (falls back to the
+//                         download page when the device has no build).
+// [data-get="android"] → that platform's build.
+document.querySelectorAll('[data-get]').forEach((el) => {
+  const want = el.getAttribute('data-get') || myPlatform;
+  const label = el.querySelector('[data-get-label]');
+  const icon = el.querySelector('[data-get-icon]');
+  if (!el.getAttribute('data-get')) {
+    if (want && BUILDS[want]) {
+      if (label) label.textContent = `Download for ${BUILDS[want].label}`;
+      if (icon) icon.innerHTML = ICONS[want];
     } else {
-      successText.textContent = `${greeting} There's no native build for this device yet, so open SevenTabs in your browser instead.`;
-      downloadBtn.style.display = 'none';
-    }
-    justSignedUp = false;
-  }
-
-  function resetModal() {
-    if (modalTitle) modalTitle.textContent = DEFAULT_TITLE;
-    if (modalSubtitle) modalSubtitle.textContent = DEFAULT_SUBTITLE;
-    form.hidden = false;
-    footer.hidden = false;
-    if (signUpPanel) signUpPanel.hidden = true;
-    if (otpPanel) otpPanel.hidden = true;
-    successBox.hidden = true;
-    form.reset();
-    errorBox.classList.remove('show');
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Sign in';
-    if (signUpForm) signUpForm.reset();
-    if (signUpError) signUpError.classList.remove('show');
-    if (signUpSubmit) {
-      signUpSubmit.disabled = false;
-      signUpSubmit.textContent = 'Create account';
-    }
-    justSignedUp = false;
-    stopOtpCooldown();
-  }
-
-  // Swaps the modal into signup mode — same overlay/shell, different
-  // panel, so it never feels like a separate disconnected page.
-  function showSignUp() {
-    form.hidden = true;
-    footer.hidden = true;
-    if (otpPanel) otpPanel.hidden = true;
-    successBox.hidden = true;
-    if (signUpPanel) signUpPanel.hidden = false;
-    if (modalTitle) modalTitle.textContent = 'Create your SevenTabs account';
-    if (modalSubtitle) modalSubtitle.textContent = "Set up your business — you'll verify your email with a one-time code, then get SevenTabs for your device.";
-    errorBox.classList.remove('show');
-    if (signUpError) signUpError.classList.remove('show');
-    const first = document.getElementById('suBusiness');
-    if (first) first.focus();
-  }
-
-  function openModal() {
-    overlay.classList.add('open');
-    if (hasSession) {
-      showSuccess();
-    } else {
-      resetModal();
-      document.getElementById('siEmail').focus();
+      if (label) label.textContent = 'See all downloads';
+      if (icon) icon.innerHTML = '';
     }
   }
-  function closeModal() {
-    overlay.classList.remove('open');
-  }
-
-  [navAppBtn, heroAppBtn, ctaAppBtn, footAppBtn].forEach((btn) => {
-    if (btn) btn.addEventListener('click', openModal);
-  });
-
-  // Platform-specific download cards (index.html + download.html) —
-  // deliberately NOT gated behind sign-in: getting the installer is
-  // free and needs no email, unlike every other "Get SevenTabs" entry
-  // point above, which is the cloud/team product and keeps its
-  // existing sign-in-first flow untouched.
-  document.querySelectorAll('[data-platform]').forEach((btn) => {
-    btn.addEventListener('click', () => triggerDirectDownload(btn.dataset.platform));
-  });
-
-  closeBtn.addEventListener('click', closeModal);
-  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
-
-  // Promo popup — the real offer already backing the Pro plan (30-day
-  // trial, no card). Only present in index.html's markup (see
-  // marketing/index.html), so it can never appear on any other page —
-  // and shown at most once per browser via localStorage, so it doesn't
-  // reappear on every refresh either. Also skipped once we know there's
-  // a live session — an already-signed-in visitor doesn't need a trial
-  // pitch. See the getSession().then() below for that half.
-  const PROMO_SEEN_KEY = 'seventabs_promo_seen';
-  const promoPopup = document.getElementById('promoPopup');
-  if (promoPopup) {
-    const promoPopupCta = document.getElementById('promoPopupCta');
-    const promoPopupClose = document.getElementById('promoPopupClose');
-    const promoPopupSignIn = document.getElementById('promoPopupSignIn');
-    function closePromoPopup() {
-      promoPopup.classList.remove('open');
-    }
-    if (promoPopupCta) {
-      promoPopupCta.addEventListener('click', () => {
-        closePromoPopup();
-        openModal();
-      });
-    }
-    if (promoPopupSignIn) {
-      promoPopupSignIn.addEventListener('click', (e) => {
-        e.preventDefault();
-        closePromoPopup();
-        openModal();
-      });
-    }
-    if (promoPopupClose) promoPopupClose.addEventListener('click', closePromoPopup);
-    promoPopup.addEventListener('click', (e) => { if (e.target === promoPopup) closePromoPopup(); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePromoPopup(); });
-  }
-
-  // ---- OTP step ----
-
-  function stopOtpCooldown() {
-    if (otpCooldownTimer) clearInterval(otpCooldownTimer);
-    otpCooldownTimer = null;
-    if (otpResendBtn) {
-      otpResendBtn.disabled = false;
-      otpResendBtn.textContent = 'Resend code';
-    }
-  }
-
-  function startOtpCooldown() {
-    if (!otpResendBtn) return;
-    let seconds = 60;
-    otpResendBtn.disabled = true;
-    otpResendBtn.textContent = `Resend code in ${seconds}s`;
-    otpCooldownTimer = setInterval(() => {
-      seconds -= 1;
-      if (seconds <= 0) {
-        stopOtpCooldown();
-        return;
-      }
-      otpResendBtn.textContent = `Resend code in ${seconds}s`;
-    }, 1000);
-  }
-
-  function otpFriendlyError(error) {
-    const msg = error && error.message ? error.message : String(error);
-    if (/expired|invalid/i.test(msg)) return "That code's wrong or has expired. Try again or resend.";
-    return msg;
-  }
-
-  function clearOtpBoxes() {
-    otpBoxes.forEach((box) => {
-      box.value = '';
-      box.classList.remove('filled');
-    });
-    if (otpBoxes[0]) otpBoxes[0].focus();
-  }
-
-  async function sendOtp(email) {
-    pendingEmail = email;
-    form.hidden = true;
-    footer.hidden = true;
-    if (signUpPanel) signUpPanel.hidden = true;
-    successBox.hidden = true;
-    otpPanel.hidden = false;
-    if (modalTitle) modalTitle.textContent = 'Verify your email';
-    if (modalSubtitle) modalSubtitle.textContent = '';
-    if (otpIcon) otpIcon.classList.remove('ok');
-    otpError.classList.remove('show');
-    otpText.textContent = justSignedUp
-      ? `Almost done — we sent a 6-digit code to ${email} to confirm it's really you.`
-      : `Since this is the first time you're signing in on this browser, we sent a 6-digit code to ${email}.`;
-    clearOtpBoxes();
-    otpVerifyBtn.disabled = false;
-    otpVerifyBtn.textContent = 'Verify & continue';
-    try {
-      const client = await getSupabase();
-      const { error } = await client.auth.signInWithOtp({ email, shouldCreateUser: false });
-      if (error) throw error;
-      startOtpCooldown();
-    } catch (e) {
-      otpError.textContent = otpFriendlyError(e);
-      otpError.classList.add('show');
-    }
-  }
-
-  async function verifyOtp() {
-    const code = otpBoxes.map((b) => b.value).join('');
-    if (code.length !== 6) {
-      otpError.textContent = 'Enter all 6 digits from the email.';
-      otpError.classList.add('show');
-      return;
-    }
-    otpError.classList.remove('show');
-    otpVerifyBtn.disabled = true;
-    otpVerifyBtn.textContent = 'Verifying…';
-    try {
-      const client = await getSupabase();
-      const { error } = await client.auth.verifyOtp({
-        email: pendingEmail,
-        token: code,
-        type: 'email',
-      });
-      if (error) throw error;
-      markDeviceTrusted(pendingEmail);
-      hasSession = true;
-      stopOtpCooldown();
-      if (otpIcon) {
-        otpIcon.classList.add('ok');
-        otpIcon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>';
-      }
-      otpText.textContent = "Device confirmed. You won't need to do this again on this browser.";
-      setTimeout(showSuccess, 650);
-    } catch (e) {
-      otpError.textContent = otpFriendlyError(e);
-      otpError.classList.add('show');
-      otpVerifyBtn.disabled = false;
-      otpVerifyBtn.textContent = 'Verify & continue';
-      if (otpBoxesWrap) {
-        otpBoxesWrap.classList.remove('shake');
-        // eslint-disable-next-line no-void
-        void otpBoxesWrap.offsetWidth; // restart the animation on repeat errors
-        otpBoxesWrap.classList.add('shake');
-      }
-      clearOtpBoxes();
-    }
-  }
-
-  if (otpBoxes.length) {
-    otpBoxes.forEach((box, i) => {
-      box.addEventListener('input', () => {
-        box.value = box.value.replace(/\D/g, '').slice(0, 1);
-        box.classList.toggle('filled', box.value !== '');
-        if (box.value && i < otpBoxes.length - 1) otpBoxes[i + 1].focus();
-        if (otpBoxes.every((b) => b.value)) verifyOtp();
-      });
-      box.addEventListener('keydown', (e) => {
-        if (e.key === 'Backspace' && !box.value && i > 0) otpBoxes[i - 1].focus();
-      });
-      box.addEventListener('paste', (e) => {
-        const digits = (e.clipboardData.getData('text').match(/\d/g) || []).slice(0, otpBoxes.length);
-        if (!digits.length) return;
-        e.preventDefault();
-        digits.forEach((d, j) => {
-          if (otpBoxes[j]) {
-            otpBoxes[j].value = d;
-            otpBoxes[j].classList.add('filled');
-          }
-        });
-        const next = otpBoxes[digits.length] || otpBoxes[otpBoxes.length - 1];
-        next.focus();
-        if (otpBoxes.every((b) => b.value)) verifyOtp();
-      });
-    });
-  }
-  if (otpVerifyBtn) otpVerifyBtn.addEventListener('click', verifyOtp);
-  if (otpResendBtn) otpResendBtn.addEventListener('click', () => sendOtp(pendingEmail));
-  if (otpBackBtn) {
-    otpBackBtn.addEventListener('click', async () => {
-      stopOtpCooldown();
-      // Best-effort — the visitor just wants to go back to the sign-in
-      // form either way, even if Supabase never loaded in the first
-      // place (in which case there's no session to sign out of anyway).
-      try {
-        const client = await getSupabase();
-        await client.auth.signOut();
-      } catch {
-        // ignore
-      }
-      resetModal();
-      document.getElementById('siEmail').focus();
-    });
-  }
-
-  form.addEventListener('submit', async (e) => {
+  el.addEventListener('click', (e) => {
+    if (!want || !BUILDS[want]) return; // let the link open download.html
     e.preventDefault();
-    errorBox.classList.remove('show');
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Signing in…';
-    const email = document.getElementById('siEmail').value.trim();
-    const password = document.getElementById('siPassword').value;
-    let client;
-    try {
-      client = await getSupabase();
-    } catch {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Sign in';
-      errorBox.textContent = "Couldn't connect — check your internet connection and try again.";
-      errorBox.classList.add('show');
-      return;
-    }
-    const { error } = await client.auth.signInWithPassword({ email, password });
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Sign in';
-    if (error) {
-      errorBox.textContent = error.message === 'Invalid login credentials'
-        ? 'Wrong email or password.'
-        : error.message;
-      errorBox.classList.add('show');
-      return;
-    }
-    if (isDeviceTrusted(email)) {
-      hasSession = true;
-      showSuccess();
-    } else {
-      await sendOtp(email);
-    }
+    startDownload(want);
   });
+});
 
-  if (goToSignUpBtn) goToSignUpBtn.addEventListener('click', showSignUp);
-  if (signUpBackBtn) {
-    signUpBackBtn.addEventListener('click', () => {
-      resetModal();
-      document.getElementById('siEmail').focus();
-    });
+// Download page: put this device's card first and mark it.
+const dlCards = document.querySelectorAll('[data-plat]');
+dlCards.forEach((card) => {
+  if (card.getAttribute('data-plat') === myPlatform) {
+    card.classList.add('me');
+    card.parentElement.prepend(card);
+    const btn = card.querySelector('.a-btn');
+    if (btn) { btn.classList.remove('out'); btn.classList.add('primary'); }
   }
+});
 
-  function signUpFriendlyError(error) {
-    const msg = error && error.message ? error.message : String(error);
-    if (/already registered|already exists/i.test(msg)) {
-      return 'An account already exists for that email — sign in instead.';
-    }
-    if (/password/i.test(msg) && /least|short|characters/i.test(msg)) {
-      return 'Password must be at least 8 characters.';
-    }
-    return msg;
+// Phone bottom bar: only on phones we have a build for.
+const mbar = document.getElementById('mbar');
+if (mbar) {
+  if (myPlatform === 'android') {
+    mbar.hidden = false;
+    document.body.classList.add('has-mbar');
+  } else {
+    mbar.remove();
   }
+}
 
-  // At least 8 characters, with lowercase, uppercase, a digit and a
-  // symbol — matches the hint text under the Password field.
-  const STRONG_PASSWORD_RULE = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+// ---- Visits, downloads, people here now ----
+// One "visit" per browser tab session; a light ping while the page is
+// open so "here now" is real. Numbers show only when the cloud answers.
+try {
+  if (!sessionStorage.getItem('st_seen')) {
+    sessionStorage.setItem('st_seen', '1');
+    track('visit', myPlatform);
+  } else {
+    track('ping', myPlatform);
+  }
+} catch (_) { track('visit', myPlatform); }
+setInterval(() => { if (document.visibilityState === 'visible') track('ping', myPlatform); }, 60000);
 
-  if (signUpForm) {
-    signUpForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      signUpError.classList.remove('show');
+const nf = new Intl.NumberFormat('en');
+const counter = document.getElementById('siteCounter');
+if (counter) {
+  const load = () => fetch(`${SITE_API}?action=stats`, { headers: { apikey: SUPABASE_ANON_KEY } })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((d) => {
+      if (!d || typeof d.visitsMonth !== 'number') return;
+      counter.querySelector('[data-stat="visits"]').textContent = nf.format(d.visitsMonth);
+      counter.querySelector('[data-stat="downloads"]').textContent = nf.format(d.downloads);
+      counter.querySelector('[data-stat="now"]').textContent = nf.format(Math.max(1, d.liveNow));
+      counter.hidden = false;
+    })
+    .catch(() => {});
+  load();
+  setInterval(() => { if (document.visibilityState === 'visible') load(); }, 60000);
+}
 
-      const businessName = document.getElementById('suBusiness').value.trim();
-      const yourName = document.getElementById('suName').value.trim();
-      const email = document.getElementById('suEmail').value.trim();
-      const phone = document.getElementById('suPhone').value.trim();
-      const password = document.getElementById('suPassword').value;
-      const passwordConfirm = document.getElementById('suPasswordConfirm').value;
-
-      if (!STRONG_PASSWORD_RULE.test(password)) {
-        signUpError.textContent = 'Password must be at least 8 characters and include uppercase, lowercase, a number and a symbol.';
-        signUpError.classList.add('show');
-        document.getElementById('suPassword').focus();
+// ---- Reviews ----
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function starsHtml(n) {
+  const full = Math.round(n);
+  return '★'.repeat(full) + `<span class="off">${'★'.repeat(5 - full)}</span>`;
+}
+const AV_COLORS = ['#5b4ff5', '#16a34a', '#db2777', '#0891b2', '#ea580c', '#7c3aed'];
+function reviewCard(r) {
+  const name = esc(r.name);
+  const color = AV_COLORS[(r.name || '').length % AV_COLORS.length];
+  return `<div class="a-card"><div class="a-stars" aria-label="${r.stars} out of 5">${starsHtml(r.stars)}</div>`
+    + `<p>“${esc(r.text)}”</p><div class="a-who"><div class="a-av" style="background:${color}">${esc((r.name || '?').trim().charAt(0).toUpperCase())}</div>`
+    + `<div>${name}${r.business ? `<span>${esc(r.business)}</span>` : ''}</div></div></div>`;
+}
+const rList = document.getElementById('reviewList');
+if (rList) {
+  const limit = Number(rList.getAttribute('data-limit') || 3);
+  fetch(`${SITE_API}?action=reviews&limit=${limit}`, { headers: { apikey: SUPABASE_ANON_KEY } })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((d) => {
+      const empty = document.getElementById('reviewEmpty');
+      if (!d || !Array.isArray(d.reviews) || d.reviews.length === 0) {
+        if (empty) empty.hidden = false;
         return;
       }
-      if (password !== passwordConfirm) {
-        signUpError.textContent = "Passwords don't match.";
-        signUpError.classList.add('show');
-        document.getElementById('suPasswordConfirm').focus();
-        return;
+      rList.innerHTML = d.reviews.map(reviewCard).join('');
+      const score = document.getElementById('reviewScore');
+      if (score && d.count > 0) {
+        score.querySelector('b').textContent = Number(d.average).toFixed(1);
+        score.querySelector('.a-stars').innerHTML = starsHtml(d.average);
+        score.querySelector('[data-count]').textContent = `from ${nf.format(d.count)} review${d.count === 1 ? '' : 's'}`;
+        score.hidden = false;
       }
-
-      signUpSubmit.disabled = true;
-      signUpSubmit.textContent = 'Creating account…';
-
-      try {
-        const client = await getSupabase();
-        const { data, error } = await client.auth.signUp({
-          email,
-          password,
-          options: { data: { full_name: yourName, phone } },
-        });
-        if (error) throw error;
-        // Supabase's documented signal for "this email is already a
-        // confirmed user" when email confirmations are off: signUp
-        // still returns 200 with no error, but no new identity gets
-        // attached. Catch it here instead of silently creating nothing.
-        if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-          throw new Error('An account already exists for that email — sign in instead.');
-        }
-
-        // Company creation mirrors the app's own onboarding exactly
-        // (CloudOnboardingScreen.finishCreateCompany): insert the
-        // company, then overwrite the display_name a DB trigger
-        // auto-fills from the JWT email with the name actually typed
-        // in. Phone isn't a company_members column (yet), so it's kept
-        // on the auth user's own metadata instead, set above.
-        const { data: companyRow, error: companyError } = await client
-          .from('companies')
-          .insert({ name: businessName })
-          .select()
-          .single();
-        if (companyError) throw companyError;
-
-        const { error: memberError } = await client
-          .from('company_members')
-          .update({ display_name: yourName })
-          .eq('company_id', companyRow.id)
-          .eq('user_id', data.user.id);
-        if (memberError) throw memberError;
-
-        justSignedUp = true;
-        await sendOtp(email);
-      } catch (err) {
-        signUpError.textContent = signUpFriendlyError(err);
-        signUpError.classList.add('show');
-      } finally {
-        signUpSubmit.disabled = false;
-        signUpSubmit.textContent = 'Create account';
-      }
+    })
+    .catch(() => {
+      const empty = document.getElementById('reviewEmpty');
+      if (empty) empty.hidden = false;
     });
-  }
+}
 
-  // If already signed in on this device, every entry point should say
-  // so instead of a generic "sign in" prompt — small but real touch.
-  // Failure (e.g. the CDN import never resolves) falls through to the
-  // same "not signed in" branch below — a visitor who can't reach
-  // Supabase at all is in no worse a position than one who's simply
-  // never signed in, and the rest of the page must stay usable either
-  // way.
-  getSupabase().then((client) => client.auth.getSession()).catch(() => ({ data: { session: null } })).then(({ data }) => {
-    if (data.session) {
-      hasSession = true;
-      if (navAppBtn) navAppBtn.textContent = 'Get SevenTabs →';
-      if (heroAppBtnLabel) heroAppBtnLabel.textContent = 'Get SevenTabs for your device';
-      if (ctaAppBtn) ctaAppBtn.textContent = 'Get SevenTabs for your device →';
-      if (footAppBtn) footAppBtn.textContent = 'Get SevenTabs';
-    } else if (promoPopup && !localStorage.getItem(PROMO_SEEN_KEY)) {
-      // A beat after load so it doesn't compete with the page's own
-      // entrance animations for attention. Marked as seen immediately
-      // so it never shows again on this browser, even without the
-      // visitor closing it.
-      localStorage.setItem(PROMO_SEEN_KEY, '1');
-      setTimeout(() => promoPopup.classList.add('open'), 900);
+const rForm = document.getElementById('reviewForm');
+if (rForm) {
+  let stars = 5;
+  const pick = rForm.querySelectorAll('.a-pick button');
+  const paint = () => pick.forEach((b, i) => {
+    b.classList.toggle('on', i < stars);
+    b.setAttribute('aria-pressed', String(i < stars));
+  });
+  pick.forEach((b, i) => b.addEventListener('click', () => { stars = i + 1; paint(); }));
+  paint();
+  const msg = document.getElementById('reviewMsg');
+  const send = document.getElementById('reviewSend');
+  rForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = rForm.querySelector('#rName').value.trim();
+    const text = rForm.querySelector('#rText').value.trim();
+    msg.hidden = true;
+    if (!name || text.length < 10) {
+      msg.className = 'a-msg err';
+      msg.textContent = 'Please write your name and a few words (at least 10 letters).';
+      msg.hidden = false;
+      return;
+    }
+    send.disabled = true;
+    send.textContent = 'Sending…';
+    try {
+      const res = await fetch(SITE_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY },
+        body: JSON.stringify({
+          action: 'review', name, text, stars,
+          business: rForm.querySelector('#rBusiness').value.trim(),
+          website: rForm.querySelector('#rWebsite').value,
+        }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      msg.className = 'a-msg ok';
+      msg.textContent = 'Thank you! Your review will show here after a quick check.';
+      msg.hidden = false;
+      rForm.reset();
+      stars = 5; paint();
+    } catch (_) {
+      msg.className = 'a-msg err';
+      msg.textContent = "That didn't go through. Please try again in a moment.";
+      msg.hidden = false;
+    } finally {
+      send.disabled = false;
+      send.textContent = 'Send review';
     }
   });
 }
@@ -901,33 +380,3 @@ if (overlay) {
   });
 })();
 
-// ---- Mouse-follow 3D tilt for a page's one focal element ----
-// Each page gets at most one of these deliberately, not applied to every
-// card on the page — a mouse-follow tilt on many elements at once reads
-// as noisy rather than as a deliberate depth cue. Off under
-// prefers-reduced-motion (the resting CSS tilt still applies from
-// home.css; only the pointer-follow motion is skipped),
-// and paused the instant the pointer leaves so it always settles back
-// to the resting tilt rather than getting stuck mid-tween.
-function initTilt(wrapId, tiltId, restY, rangeX, rangeY) {
-  const wrap = document.getElementById(wrapId);
-  const tilt = document.getElementById(tiltId);
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!wrap || !tilt || reduceMotion) return;
-  if (window.matchMedia('(max-width: 720px)').matches) return; // flattened on phones
-
-  wrap.addEventListener('pointermove', (e) => {
-    const r = wrap.getBoundingClientRect();
-    const px = (e.clientX - r.left) / r.width;  // 0..1 across the element
-    const py = (e.clientY - r.top) / r.height;
-    tilt.style.setProperty('--tilt-y', `${(px - 0.5) * -2 * rangeX}deg`);
-    tilt.style.setProperty('--tilt-x', `${(0.5 - py) * -2 * rangeY + restY}deg`);
-  });
-  wrap.addEventListener('pointerleave', () => {
-    tilt.style.removeProperty('--tilt-y');
-    tilt.style.removeProperty('--tilt-x');
-  });
-}
-// index.html hero mockup — #preview3d/#previewTilt aren't on any other
-// page, so this call is a no-op everywhere else.
-initTilt('preview3d', 'previewTilt', 9, 12, 7);
