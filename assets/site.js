@@ -139,6 +139,16 @@ if (mbar) {
   }
 }
 
+// Respect "reduce motion": show the still picture instead of the video.
+try {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.querySelectorAll('video[autoplay]').forEach((v) => {
+      v.removeAttribute('autoplay');
+      v.pause();
+    });
+  }
+} catch (_) { /* ignore */ }
+
 // ---- Visits, downloads, people here now ----
 // One "visit" per browser tab session; a light ping while the page is
 // open so "here now" is real. Numbers show only when the cloud answers.
