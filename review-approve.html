@@ -7,8 +7,11 @@
 <meta name="referrer" content="no-referrer">
 <title>Review — SevenTabs</title>
 <link rel="icon" href="assets/favicon.png">
-<link rel="stylesheet" href="assets/site.css?v=68a962575aa9">
-<link rel="stylesheet" href="assets/apple.css?v=68a962575aa9">
+<link rel="stylesheet" href="assets/site.css?v=97827874801b">
+<link rel="stylesheet" href="assets/apple.css?v=97827874801b">
+<link rel="alternate" hreflang="en" href="https://7tabs.org/review-approve.html">
+<link rel="alternate" hreflang="ar" href="https://7tabs.org/ar/review-approve.html">
+<link rel="alternate" hreflang="x-default" href="https://7tabs.org/review-approve.html">
 </head>
 <body>
 <header>
@@ -24,6 +27,7 @@
       <a href="pricing.html">Pricing</a>
       <a href="help.html">Help</a>
     </div>
+    <a class="lang-switch" href="ar/review-approve.html" lang="ar" hreflang="ar">العربية</a>
     <a class="nav-cta" href="download.html">Download</a>
   </nav>
 </header>
@@ -68,6 +72,8 @@
 // link is signed; nothing happens until the owner presses the button, so
 // email link-scanners that open links can't approve or delete anything.
 (function () {
+  var AR = (document.documentElement.lang || '').indexOf('ar') === 0;
+  function L(en, ar) { return AR ? ar : en; }
   var q = new URLSearchParams(location.search);
   var kind = q.get('kind') === 'suggestion' ? 'suggestion' : 'review';
   var id = q.get('id') || '', what = q.get('do') || '', sig = q.get('sig') || '';
@@ -76,25 +82,39 @@
   var go = document.getElementById('mGo');
   var msg = document.getElementById('mMsg');
   function show(ok, t) { msg.className = 'a-msg ' + (ok ? 'ok' : 'err'); msg.textContent = t; msg.hidden = false; }
-  var allowed = kind === 'suggestion' ? ['approve', 'planned', 'added', 'delete'] : ['approve', 'delete'];
+  // Reviews (2026-11-02): the owner can only hide one (abuse) or show it
+  // again — an older email's Approve shows, its Delete only hides.
+  var allowed = kind === 'suggestion' ? ['approve', 'planned', 'added', 'delete'] : ['hide', 'show', 'approve', 'delete'];
   if (!id || !sig || allowed.indexOf(what) < 0) {
-    title.textContent = 'This link is not complete';
-    text.textContent = 'Please open the button from the email again.';
+    title.textContent = L('This link is not complete', 'هذا الرابط غير مكتمل');
+    text.textContent = L('Please open the button from the email again.', 'افتح الزر من الرسالة مرة أخرى.');
     go.hidden = true;
     return;
   }
-  var noun = kind === 'suggestion' ? 'idea' : 'review';
-  var texts = {
+  var noun = kind === 'suggestion' ? L('idea', 'الفكرة') : L('review', 'التقييم');
+  if (kind === 'review' && what === 'delete') what = 'hide';
+  if (kind === 'review' && what === 'approve') what = 'show';
+  var texts = (AR ? {
+    approve: [(kind === 'suggestion' ? 'إظهار هذه الفكرة؟' : 'إظهار هذا التقييم؟'), 'سيظهر على 7tabs.org للجميع.', 'أظهره',
+              (kind === 'suggestion' ? 'تم — الفكرة على الموقع الآن.' : 'تم الاعتماد — أصبح على الموقع الآن.')],
+    planned: ['تحديد الفكرة كمخطط لها؟', 'سيرى الزوار علامة "مخطط لها" عليها.', 'حدّدها كمخطط لها', 'تم — تظهر كمخطط لها.'],
+    added: ['تحديدها كمضافة إلى التطبيق؟', 'سيرى الزوار علامة "✓ أُضيفت إلى التطبيق" عليها.', 'حدّدها كمضافة', 'تم — تظهر كمضافة إلى التطبيق.'],
+    'delete': [(kind === 'suggestion' ? 'حذف هذه الفكرة؟' : 'حذف هذا التقييم؟'), 'سيُحذف نهائيًا.', 'حذف', 'تم الحذف.'],
+    hide: ['إخفاء هذا التقييم؟', 'للإساءة أو الرسائل المزعجة فقط. يبقى محفوظًا ويمكنك إظهاره مرة أخرى.', 'إخفاء', 'تم الإخفاء — لم يعد على الموقع.'],
+    show: ['إظهار هذا التقييم مرة أخرى؟', 'سيظهر على 7tabs.org للجميع.', 'أظهره', 'تم — أصبح على الموقع الآن.']
+  } : {
     approve: ['Show this ' + noun + '?', 'It will show on 7tabs.org for everyone.', 'Show it',
               (kind === 'suggestion' ? 'Done — the idea is on the website now.' : 'Approved — it is on the website now.')],
     planned: ['Mark this idea as Planned?', 'Visitors will see a “Planned” badge on it.', 'Mark planned', 'Done — it shows as Planned.'],
     added: ['Mark as Added in the app?', 'Visitors will see “✓ Added in the app” on it.', 'Mark added', 'Done — it shows as Added in the app.'],
-    'delete': ['Delete this ' + noun + '?', 'It will be removed for good.', 'Delete', 'Deleted.']
-  }[what];
+    'delete': ['Delete this ' + noun + '?', 'It will be removed for good.', 'Delete', 'Deleted.'],
+    hide: ['Hide this review?', 'For abuse or spam only. It is kept, and you can show it again.', 'Hide', 'Hidden — it is no longer on the website.'],
+    show: ['Show this review again?', 'It will show on 7tabs.org for everyone.', 'Show it', 'Done — it is on the website now.']
+  })[what];
   title.textContent = texts[0];
   text.textContent = texts[1];
   go.textContent = texts[2];
-  if (what === 'delete') go.style.background = '#b91c1c';
+  if (what === 'delete' || what === 'hide') go.style.background = '#b91c1c';
   go.addEventListener('click', function () {
     go.disabled = true;
     fetch('https://kamjtddqgofuasublpwc.supabase.co/functions/v1/site-public', {
@@ -103,14 +123,18 @@
       body: JSON.stringify({ action: 'moderate', kind: kind, id: id, do: what, sig: sig })
     }).then(function (r) { return r.json().then(function (d) { return { r: r, d: d }; }); })
       .then(function (x) {
-        if (!x.r.ok) { show(false, x.d && x.d.error ? x.d.error : 'That did not work. Please try again.'); go.disabled = false; return; }
+        if (!x.r.ok) { show(false, AR ? (x.r.status === 403 ? 'هذا الزر من رسالة قديمة أو تم تغيير الرابط. استخدم الزر في أحدث رسالة.' : 'لم ينجح ذلك. حاول مرة أخرى.') : (x.d && x.d.error ? x.d.error : 'That did not work. Please try again.')); go.disabled = false; return; }
         go.hidden = true;
-        show(true, x.d.note ? x.d.note : texts[3]);
+        show(true, x.d.note ? L(x.d.note, kind === 'review' ? 'حذفه كاتبه مسبقًا.' : 'تم حذفه مسبقًا.') : texts[3]);
+        // A hidden review can be shown again from the same page.
+        if (kind === 'review' && what === 'hide' && !x.d.note) {
+          show(true, texts[3] + ' ' + L('Changed your mind? Use “Show it again” in the email.', 'غيّرت رأيك؟ استخدم «أظهره مرة أخرى» في الرسالة.'));
+        }
       })
-      .catch(function () { show(false, 'No connection. Please try again.'); go.disabled = false; });
+      .catch(function () { show(false, L('No connection. Please try again.', 'لا يوجد اتصال. حاول مرة أخرى.')); go.disabled = false; });
   });
 })();
 </script>
-<script type="module" src="assets/site.js?v=68a962575aa9"></script>
+<script type="module" src="assets/site.js?v=97827874801b"></script>
 </body>
 </html>

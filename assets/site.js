@@ -11,6 +11,10 @@ const SUPABASE_URL = 'https://kamjtddqgofuasublpwc.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_25vQKsEQqDUEjEkuglU1Rg_GzEW9S3a';
 const SITE_API = `${SUPABASE_URL}/functions/v1/site-public`;
 
+// Page language: the Arabic pages (marketing/ar/) say lang="ar".
+const AR = (document.documentElement.lang || '').toLowerCase().startsWith('ar');
+const L = (en, ar) => (AR ? ar : en);
+
 const yearEl = document.getElementById('year');
 if (yearEl) yearEl.textContent = new Date().getFullYear();
 
@@ -33,15 +37,15 @@ if (revealTargets.length && 'IntersectionObserver' in window) {
 // ---- Downloads ----
 export const BUILDS = {
   windows: {
-    label: 'Windows', file: 'SevenTabs-Windows.zip',
+    label: L('Windows', 'ويندوز'), file: 'SevenTabs-Windows.zip',
     url: 'https://github.com/kirdaarapp/seventabs-site/releases/latest/download/SevenTabs-Windows.zip',
   },
   android: {
-    label: 'Android', file: 'SevenTabs-Android.apk',
+    label: L('Android', 'أندرويد'), file: 'SevenTabs-Android.apk',
     url: 'https://github.com/kirdaarapp/seventabs-site/releases/latest/download/SevenTabs-Android.apk',
   },
   mac: {
-    label: 'Mac', file: 'SevenTabs-macOS.zip',
+    label: L('Mac', 'ماك'), file: 'SevenTabs-macOS.zip',
     url: 'https://github.com/kirdaarapp/seventabs-site/releases/latest/download/SevenTabs-macOS.zip',
   },
 };
@@ -103,10 +107,10 @@ document.querySelectorAll('[data-get]').forEach((el) => {
   const icon = el.querySelector('[data-get-icon]');
   if (!el.getAttribute('data-get')) {
     if (want && BUILDS[want]) {
-      if (label) label.textContent = `Download for ${BUILDS[want].label}`;
+      if (label) label.textContent = L(`Download for ${BUILDS[want].label}`, `حمّل لـ${BUILDS[want].label}`);
       if (icon) icon.innerHTML = ICONS[want];
     } else {
-      if (label) label.textContent = 'See all downloads';
+      if (label) label.textContent = L('See all downloads', 'كل التحميلات');
       if (icon) icon.innerHTML = '';
     }
   }
@@ -200,36 +204,43 @@ const AV_COLORS = ['#5b4ff5', '#16a34a', '#db2777', '#0891b2', '#ea580c', '#7c3a
 function reviewCard(r) {
   const name = esc(r.name);
   const color = AV_COLORS[(r.name || '').length % AV_COLORS.length];
-  return `<div class="a-card"><div class="a-stars" aria-label="${r.stars} out of 5">${starsHtml(r.stars)}</div>`
-    + `<p>“${esc(r.text)}”</p><div class="a-who"><div class="a-av" style="background:${color}">${esc((r.name || '?').trim().charAt(0).toUpperCase())}</div>`
-    + `<div>${name}${r.business ? `<span>${esc(r.business)}</span>` : ''}</div></div></div>`;
+  return `<div class="a-card"><div class="a-stars" aria-label="${L(`${r.stars} out of 5`, `${r.stars} من 5`)}">${starsHtml(r.stars)}</div>`
+    + `<p dir="auto">${L('“', '«')}${esc(r.text)}${L('”', '»')}</p><div class="a-who"><div class="a-av" style="background:${color}">${esc((r.name || '?').trim().charAt(0).toUpperCase())}</div>`
+    + `<div dir="auto">${name}${r.business ? `<span dir="auto">${esc(r.business)}</span>` : ''}</div></div></div>`;
 }
 const rList = document.getElementById('reviewList');
-if (rList) {
+// Loaded again after a review is written, changed or deleted, so the
+// average and the count are always the live ones.
+function reloadReviews() {
+  if (!rList) return;
   const limit = Number(rList.getAttribute('data-limit') || 3);
-  fetch(`${SITE_API}?action=reviews&limit=${limit}`, { headers: { apikey: SUPABASE_ANON_KEY } })
+  fetch(`${SITE_API}?action=reviews&limit=${limit}&t=${Date.now()}`, { headers: { apikey: SUPABASE_ANON_KEY } })
     .then((r) => (r.ok ? r.json() : null))
     .then((d) => {
       const empty = document.getElementById('reviewEmpty');
+      const score = document.getElementById('reviewScore');
       if (!d || !Array.isArray(d.reviews) || d.reviews.length === 0) {
+        rList.innerHTML = '';
+        if (score) score.hidden = true;
         if (empty) empty.hidden = false;
         return;
       }
+      if (empty) empty.hidden = true;
       rList.innerHTML = d.reviews.map(reviewCard).join('');
       if (typeof revealNew === 'function') revealNew(rList.children);
-      const score = document.getElementById('reviewScore');
       if (score && d.count > 0) {
         score.querySelector('b').textContent = Number(d.average).toFixed(1);
         score.querySelector('.a-stars').innerHTML = starsHtml(d.average);
-        score.querySelector('[data-count]').textContent = `from ${nf.format(d.count)} review${d.count === 1 ? '' : 's'}`;
+        score.querySelector('[data-count]').textContent = L(`from ${nf.format(d.count)} review${d.count === 1 ? '' : 's'}`, `من ${nf.format(d.count)} تقييم`);
         score.hidden = false;
       }
     })
     .catch(() => {
       const empty = document.getElementById('reviewEmpty');
-      if (empty) empty.hidden = false;
+      if (empty && !rList.children.length) empty.hidden = false;
     });
 }
+reloadReviews();
 
 const rForm = document.getElementById('reviewForm');
 if (rForm) {
@@ -239,7 +250,13 @@ if (rForm) {
   // A friendly answer for every rating. Honest on purpose: unhappy
   // customers are thanked and asked what to fix, never pushed to change
   // their stars (that would make the reviews untrustworthy).
-  const MOODS = {
+  const MOODS = AR ? {
+    1: ['😔', 'نأسف جدًا.', 'أخبرنا ما الخطأ — وسنصلحه.', 'ما الذي حدث؟ وما أول شيء يجب أن نصلحه؟'],
+    2: ['😕', 'نأسف، لم يصل للمستوى المطلوب بعد.', 'أخبرنا بما ينقص وسيعمل فريقنا عليه.', 'ما الذي ينقص أو لا يعمل لديك؟'],
+    3: ['🙂', 'شكرًا لك — نستطيع أن نكون أفضل.', 'ما الشيء الواحد الذي يجعل SevenTabs رائعًا لك؟', 'ما الذي يجب أن يتحسن؟'],
+    4: ['😊', 'رائع، شكرًا لك!', 'هل من شيء صغير يجعله مثاليًا؟', 'ما الذي أعجبك؟ وهل من شيء نحسّنه؟'],
+    5: ['🤩', 'رائع — شكرًا جزيلًا!', 'أسعدت فريقنا اليوم. أخبر الآخرين بما أحببته.', 'ما الذي أحببته في SevenTabs؟'],
+  } : {
     1: ['😔', 'We are really sorry.', 'Please tell us what went wrong — we will make it right.', 'What went wrong? What should we fix first?'],
     2: ['😕', 'Sorry it is not good enough yet.', 'Tell us what is missing and our team will work on it.', 'What is missing or not working for you?'],
     3: ['🙂', 'Thank you — we can do better.', 'What one thing would make SevenTabs great for you?', 'What should be better?'],
@@ -290,7 +307,7 @@ if (rForm) {
     const [emoji, head, line, hint] = MOODS[n];
     mood.className = `a-mood m${n}`;
     mood.innerHTML = `<span class="a-mood-e">${emoji}</span><div><b>${head}</b><span>${line}</span>`
-      + (n <= 3 ? `<a href="#suggest" class="a-mood-link">Suggest an improvement ›</a>` : '') + '</div>';
+      + (n <= 3 ? `<a href="#suggest" class="a-mood-link">${L('Suggest an improvement ›', 'اقترح تحسينًا ‹')}</a>` : '') + '</div>';
     mood.hidden = false;
     if (!reduceMotionNow()) { mood.classList.remove('show'); void mood.offsetWidth; mood.classList.add('show'); }
     textBox.placeholder = hint;
@@ -316,6 +333,99 @@ if (rForm) {
   paint();
   const msg = document.getElementById('reviewMsg');
   const send = document.getElementById('reviewSend');
+  // ---- Who is writing (user, 2026-11-02) ----
+  // Only app users write reviews: the app opens this page with #r=<token>
+  // (signed: who he is). Kept in this browser so he can come back to change
+  // or delete his review; taken out of the address bar at once.
+  const TOKEN_KEY = 'st_review_token';
+  let token = '';
+  // Reads #r=<token> (also when the page is already open and only the
+  // address's # part changes); otherwise the one kept in this browser.
+  const readToken = () => {
+    const m = /(?:^#|&)r=([^&]+)/.exec(location.hash);
+    if (m) {
+      try { token = decodeURIComponent(m[1]); } catch (_) { token = m[1]; }
+      try { localStorage.setItem(TOKEN_KEY, token); } catch (_) { /* this visit only */ }
+      history.replaceState(null, '', location.pathname + location.search);
+      return true;
+    }
+    if (!token) {
+      try { token = localStorage.getItem(TOKEN_KEY) || ''; } catch (_) { token = ''; }
+    }
+    return false;
+  };
+  readToken();
+  const appOnly = document.getElementById('reviewAppOnly');
+  const mine = document.getElementById('myReview');
+  const formTitle = document.getElementById('reviewFormTitle');
+  const api = (body) => fetch(SITE_API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY },
+    body: JSON.stringify({ ...body, token }),
+  });
+  const forget = () => {
+    token = '';
+    try { localStorage.removeItem(TOKEN_KEY); } catch (_) {}
+    rForm.hidden = true;
+    if (mine) mine.hidden = true;
+    if (appOnly) appOnly.hidden = false;
+  };
+  const fill = (r) => {
+    rForm.querySelector('#rName').value = r ? r.name || '' : '';
+    rForm.querySelector('#rBusiness').value = r ? r.business || '' : '';
+    rForm.querySelector('#rText').value = r ? r.text || '' : '';
+    if (r) choose(r.stars); else { stars = 0; paint(); mood.hidden = true; rForm.classList.remove('happy'); }
+  };
+  const showMine = (r) => {
+    if (!mine) return;
+    if (!r) { mine.hidden = true; return; }
+    mine.innerHTML = `<b>${L('Your review', 'تقييمك')}</b>`
+      + (r.hidden ? `<p class="a-msg err">${L('It is hidden from the website for now.', 'إنه مخفي عن الموقع حاليًا.')}</p>` : '')
+      + reviewCard(r)
+      + `<div class="a-mine-btns"><button type="button" class="a-btn small out" id="myEdit">${L('Edit', 'تعديل')}</button>`
+      + `<button type="button" class="a-btn small danger" id="myDelete">${L('Delete', 'حذف')}</button></div>`;
+    mine.hidden = false;
+    mine.querySelector('#myEdit').addEventListener('click', () => {
+      fill(r);
+      if (formTitle) formTitle.textContent = L('Change your review', 'عدّل تقييمك');
+      send.textContent = L('Save changes', 'احفظ التغييرات');
+      mine.hidden = true;
+      rForm.hidden = false;
+      rForm.scrollIntoView({ behavior: reduceMotionNow() ? 'auto' : 'smooth', block: 'center' });
+    });
+    mine.querySelector('#myDelete').addEventListener('click', async () => {
+      if (!window.confirm(L('Delete your review? This cannot be undone.', 'حذف تقييمك؟ لا يمكن التراجع عن ذلك.'))) return;
+      try {
+        const res = await api({ action: 'review_delete' });
+        if (res.status === 403) { forget(); return; }
+        if (!res.ok) throw new Error(String(res.status));
+        reloadReviews();
+        startMine();
+      } catch (_) {
+        window.alert(L("That didn't go through. Please try again in a moment.", 'لم يتم ذلك. حاول مرة أخرى بعد قليل.'));
+      }
+    });
+  };
+  const startMine = async () => {
+    if (!token) { forget(); return; }
+    if (appOnly) appOnly.hidden = true;
+    try {
+      const res = await api({ action: 'my_review' });
+      if (res.status === 403) { forget(); return; }
+      const d = res.ok ? await res.json() : null;
+      const r = d && d.review;
+      showMine(r);
+      if (formTitle) formTitle.textContent = L('Write a review', 'اكتب تقييمًا');
+      send.textContent = L('Send review', 'أرسل التقييم');
+      fill(null);
+      rForm.hidden = !!r;
+    } catch (_) {
+      // Offline: let him write; sending says if it failed.
+      rForm.hidden = false;
+    }
+  };
+  startMine();
+  window.addEventListener('hashchange', () => { if (readToken()) startMine(); });
   rForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = rForm.querySelector('#rName').value.trim();
@@ -323,42 +433,51 @@ if (rForm) {
     msg.hidden = true;
     if (!stars) {
       msg.className = 'a-msg err';
-      msg.textContent = 'Please tap the stars to choose your rating.';
+      msg.textContent = L('Please tap the stars to choose your rating.', 'اضغط على النجوم لاختيار تقييمك.');
       msg.hidden = false;
       return;
     }
     if (!name || text.length < 10) {
       msg.className = 'a-msg err';
-      msg.textContent = 'Please write your name and a few words (at least 10 letters).';
+      msg.textContent = L('Please write your name and a few words (at least 10 letters).', 'اكتب اسمك وبضع كلمات (10 أحرف على الأقل).');
       msg.hidden = false;
       return;
     }
     send.disabled = true;
-    send.textContent = 'Sending…';
+    send.textContent = L('Sending…', 'جارٍ الإرسال…');
     try {
-      const res = await fetch(SITE_API, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY },
-        body: JSON.stringify({
-          action: 'review', name, text, stars,
-          business: rForm.querySelector('#rBusiness').value.trim(),
-          website: rForm.querySelector('#rWebsite').value,
-        }),
+      const res = await api({
+        action: 'review', name, text, stars,
+        business: rForm.querySelector('#rBusiness').value.trim(),
+        website: rForm.querySelector('#rWebsite').value,
       });
+      if (res.status === 403) {
+        forget();
+        return;
+      }
       if (!res.ok) throw new Error(String(res.status));
-      msg.className = 'a-msg ok';
-      msg.textContent = 'Thank you! Your review will show here after a quick check.';
-      msg.hidden = false;
       rForm.reset();
       stars = 0; paint(); mood.hidden = true; rForm.classList.remove('happy');
-      textBox.placeholder = 'What do you like? What should be better?';
+      textBox.placeholder = L('What do you like? What should be better?', 'ما الذي أعجبك؟ وما الذي يجب أن يتحسن؟');
+      await startMine();
+      reloadReviews();
+      if (mine && !mine.hidden) {
+        const ok = document.createElement('p');
+        ok.className = 'a-msg ok';
+        ok.textContent = L('Thank you! Your review is on the website now.', 'شكرًا لك! تقييمك على الموقع الآن.');
+        mine.prepend(ok);
+      }
     } catch (_) {
       msg.className = 'a-msg err';
-      msg.textContent = "That didn't go through. Please try again in a moment.";
+      msg.textContent = L("That didn't go through. Please try again in a moment.", 'لم يتم الإرسال. حاول مرة أخرى بعد قليل.');
       msg.hidden = false;
     } finally {
       send.disabled = false;
-      send.textContent = 'Send review';
+      if (send.textContent === L('Sending…', 'جارٍ الإرسال…')) {
+        send.textContent = formTitle && formTitle.textContent === L('Change your review', 'عدّل تقييمك')
+          ? L('Save changes', 'احفظ التغييرات')
+          : L('Send review', 'أرسل التقييم');
+      }
     }
   });
 }
@@ -374,15 +493,15 @@ function saveVoted(set) {
 const UP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5l7 8h-4.5v6h-5v-6H5z"/></svg>';
 function ideaCard(r, voted) {
   const badge = r.status === 'added'
-    ? '<span class="a-badge added">✓ Added in the app</span>'
-    : r.status === 'planned' ? '<span class="a-badge planned">Planned</span>' : '';
+    ? `<span class="a-badge added">${L('✓ Added in the app', '✓ أُضيفت إلى التطبيق')}</span>`
+    : r.status === 'planned' ? `<span class="a-badge planned">${L('Planned', 'مخطط لها')}</span>` : '';
   const when = r.status === 'added' && r.added_at ? r.added_at : r.created_at;
-  const date = when ? new Date(when).toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
-  const meta = [r.name ? esc(r.name) : '', r.status === 'added' ? `added ${date}` : date].filter(Boolean).join(' · ');
+  const date = when ? new Date(when).toLocaleDateString(L('en', 'ar-u-nu-latn'), { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+  const meta = [r.name ? esc(r.name) : '', r.status === 'added' ? L(`added ${date}`, `أُضيفت ${date}`) : date].filter(Boolean).join(' · ');
   const on = voted.has(r.id);
   return `<div class="a-idea${r.status === 'added' ? ' added' : ''}">`
-    + `<button type="button" class="a-vote${on ? ' on' : ''}" data-id="${esc(r.id)}" aria-pressed="${on}" aria-label="${on ? 'You voted for this' : 'Vote for this idea'}">${UP}<b>${nf.format(r.votes || 0)}</b></button>`
-    + `<div><h4>${esc(r.title)}${badge}</h4>${r.details ? `<p>${esc(r.details)}</p>` : ''}<div class="a-meta">${meta}</div></div></div>`;
+    + `<button type="button" class="a-vote${on ? ' on' : ''}" data-id="${esc(r.id)}" aria-pressed="${on}" aria-label="${on ? L('You voted for this', 'صوّتّ لهذه الفكرة') : L('Vote for this idea', 'صوّت لهذه الفكرة')}">${UP}<b>${nf.format(r.votes || 0)}</b></button>`
+    + `<div><h4><bdi>${esc(r.title)}</bdi>${badge}</h4>${r.details ? `<p dir="auto">${esc(r.details)}</p>` : ''}<div class="a-meta" dir="auto">${meta}</div></div></div>`;
 }
 const iList = document.getElementById('ideaList');
 if (iList) {
@@ -430,12 +549,12 @@ if (iForm) {
     msg.hidden = true;
     if (title.length < 4) {
       msg.className = 'a-msg err';
-      msg.textContent = 'Please write your idea in a few words (at least 4 letters).';
+      msg.textContent = L('Please write your idea in a few words (at least 4 letters).', 'اكتب فكرتك في كلمات قليلة (4 أحرف على الأقل).');
       msg.hidden = false;
       return;
     }
     send.disabled = true;
-    send.textContent = 'Sending…';
+    send.textContent = L('Sending…', 'جارٍ الإرسال…');
     try {
       const res = await fetch(SITE_API, {
         method: 'POST',
@@ -449,16 +568,16 @@ if (iForm) {
       });
       if (!res.ok) throw new Error(String(res.status));
       msg.className = 'a-msg ok';
-      msg.textContent = 'Thank you! Our team reads every idea — it shows here after a quick check.';
+      msg.textContent = L('Thank you! Our team reads every idea — it shows here after a quick check.', 'شكرًا لك! فريقنا يقرأ كل فكرة — وستظهر هنا بعد مراجعة سريعة.');
       msg.hidden = false;
       iForm.reset();
     } catch (_) {
       msg.className = 'a-msg err';
-      msg.textContent = "That didn't go through. Please try again in a moment.";
+      msg.textContent = L("That didn't go through. Please try again in a moment.", 'لم يتم الإرسال. حاول مرة أخرى بعد قليل.');
       msg.hidden = false;
     } finally {
       send.disabled = false;
-      send.textContent = 'Send idea';
+      send.textContent = L('Send idea', 'أرسل الفكرة');
     }
   });
 }
@@ -545,32 +664,32 @@ function countUp(el, to) {
 // used to have one at the very bottom).
 (function initCareWidget() {
   document.body.insertAdjacentHTML('beforeend', `
-    <button type="button" id="careBtn" class="care-btn" aria-label="Contact support">
+    <button type="button" id="careBtn" class="care-btn" aria-label="${L('Contact support', 'تواصل مع الدعم')}">
       <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
     </button>
     <div class="care-panel" id="carePanel">
       <div class="care-panel-head">
         <div>
-          <strong>Customer care</strong>
-          <p>We usually reply within a few hours.</p>
+          <strong>${L('Customer care', 'خدمة العملاء')}</strong>
+          <p>${L('We usually reply within a few hours.', 'نرد عادة خلال ساعات قليلة.')}</p>
         </div>
-        <button type="button" class="modal-close" id="careClose" aria-label="Close" style="position:static">&times;</button>
+        <button type="button" class="modal-close" id="careClose" aria-label="${L('Close', 'إغلاق')}" style="position:static">&times;</button>
       </div>
       <form id="contactForm">
-        <label class="field-label" for="cName">Name</label>
+        <label class="field-label" for="cName">${L('Name', 'الاسم')}</label>
         <input class="field-input" id="cName" type="text" autocomplete="name" required>
-        <label class="field-label" for="cEmail">Email</label>
+        <label class="field-label" for="cEmail">${L('Email', 'البريد الإلكتروني')}</label>
         <input class="field-input" id="cEmail" type="email" autocomplete="email" required>
-        <label class="field-label" for="cPhone">Phone number</label>
+        <label class="field-label" for="cPhone">${L('Phone number', 'رقم الهاتف')}</label>
         <input class="field-input" id="cPhone" type="tel" autocomplete="tel" required>
         <div class="care-field-label-row">
-          <label class="field-label" for="cMessage" style="margin-bottom:0">Message</label>
+          <label class="field-label" for="cMessage" style="margin-bottom:0">${L('Message', 'الرسالة')}</label>
           <span class="care-counter" id="careCounter">0/500</span>
         </div>
         <textarea class="field-input" id="cMessage" rows="4" maxlength="500" required></textarea>
         <!-- Honeypot — real visitors never see or fill this in. -->
         <input class="hp-field" id="cWebsite" type="text" tabindex="-1" autocomplete="off">
-        <button class="btn btn-primary" type="submit" id="contactSubmit" style="width:100%;justify-content:center;margin-top:14px">Send message</button>
+        <button class="btn btn-primary" type="submit" id="contactSubmit" style="width:100%;justify-content:center;margin-top:14px">${L('Send message', 'أرسل الرسالة')}</button>
         <div class="contact-status" id="contactStatus"></div>
       </form>
     </div>
@@ -623,7 +742,7 @@ function countUp(el, to) {
     e.preventDefault();
     contactStatus.className = 'contact-status';
     contactSubmit.disabled = true;
-    contactSubmit.textContent = 'Sending…';
+    contactSubmit.textContent = L('Sending…', 'جارٍ الإرسال…');
     try {
       const res = await fetch(`${SUPABASE_URL}/functions/v1/send-contact-email`, {
         method: 'POST',
@@ -640,17 +759,17 @@ function countUp(el, to) {
         }),
       });
       if (!res.ok) throw new Error(await res.text());
-      contactStatus.textContent = 'Thank you so much for your interest — the SevenTabs team will contact you soon.';
+      contactStatus.textContent = L('Thank you so much for your interest — the SevenTabs team will contact you soon.', 'شكرًا جزيلًا لاهتمامك — سيتواصل معك فريق SevenTabs قريبًا.');
       contactStatus.classList.add('show', 'ok');
       contactForm.reset();
       careCounter.textContent = '0/500';
       careCounter.classList.remove('warn');
     } catch (err) {
-      contactStatus.textContent = "That didn't go through — please try again in a moment, or email us directly at support@7tabs.org.";
+      contactStatus.textContent = L("That didn't go through — please try again in a moment, or email us directly at support@7tabs.org.", 'لم يتم الإرسال — حاول مرة أخرى بعد قليل، أو راسلنا مباشرة على support@7tabs.org.');
       contactStatus.classList.add('show', 'err');
     } finally {
       contactSubmit.disabled = false;
-      contactSubmit.textContent = 'Send message';
+      contactSubmit.textContent = L('Send message', 'أرسل الرسالة');
     }
   });
 })();
