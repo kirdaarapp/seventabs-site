@@ -333,10 +333,10 @@ if (rForm) {
   paint();
   const msg = document.getElementById('reviewMsg');
   const send = document.getElementById('reviewSend');
-  // ---- Who is writing (user, 2026-11-02) ----
-  // Only app users write reviews: the app opens this page with #r=<token>
-  // (signed: who he is). Kept in this browser so he can come back to change
-  // or delete his review; taken out of the address bar at once.
+  // ---- Who is writing (user, 2026-11-03: anyone can review) ----
+  // The app opens this page with #r=<token> (signed: who he is); a visitor
+  // gets a token back after sending. Kept in this browser so the writer can
+  // come back to change or delete the review; taken out of the address bar.
   const TOKEN_KEY = 'st_review_token';
   let token = '';
   // Reads #r=<token> (also when the page is already open and only the
@@ -355,7 +355,6 @@ if (rForm) {
     return false;
   };
   readToken();
-  const appOnly = document.getElementById('reviewAppOnly');
   const mine = document.getElementById('myReview');
   const formTitle = document.getElementById('reviewFormTitle');
   const api = (body) => fetch(SITE_API, {
@@ -366,9 +365,8 @@ if (rForm) {
   const forget = () => {
     token = '';
     try { localStorage.removeItem(TOKEN_KEY); } catch (_) {}
-    rForm.hidden = true;
+    rForm.hidden = false;
     if (mine) mine.hidden = true;
-    if (appOnly) appOnly.hidden = false;
   };
   const fill = (r) => {
     rForm.querySelector('#rName').value = r ? r.name || '' : '';
@@ -408,7 +406,6 @@ if (rForm) {
   };
   const startMine = async () => {
     if (!token) { forget(); return; }
-    if (appOnly) appOnly.hidden = true;
     try {
       const res = await api({ action: 'my_review' });
       if (res.status === 403) { forget(); return; }
@@ -446,16 +443,20 @@ if (rForm) {
     send.disabled = true;
     send.textContent = L('Sending…', 'جارٍ الإرسال…');
     try {
-      const res = await api({
+      const body = {
         action: 'review', name, text, stars,
         business: rForm.querySelector('#rBusiness').value.trim(),
         website: rForm.querySelector('#rWebsite').value,
-      });
-      if (res.status === 403) {
-        forget();
-        return;
-      }
+      };
+      let res = await api(body);
+      // An old or broken saved token: send again as a new writer.
+      if (res.status === 403 && token) { forget(); res = await api(body); }
       if (!res.ok) throw new Error(String(res.status));
+      const d = await res.json().catch(() => ({}));
+      if (d && typeof d.token === 'string' && d.token) {
+        token = d.token;
+        try { localStorage.setItem(TOKEN_KEY, token); } catch (_) { /* this visit only */ }
+      }
       rForm.reset();
       stars = 0; paint(); mood.hidden = true; rForm.classList.remove('happy');
       textBox.placeholder = L('What do you like? What should be better?', 'ما الذي أعجبك؟ وما الذي يجب أن يتحسن؟');
